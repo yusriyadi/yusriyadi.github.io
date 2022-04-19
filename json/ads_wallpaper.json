@@ -1,0 +1,28 @@
+{
+  "username": "telborn",
+  "album": [
+    "Demon Slayer"
+  ],
+  "init_jumlah_photo": 50,
+  "admob_banner_id": "ca-app-pub-3614176406931898/9573051739",
+  "admob_interstitial_id": "ca-app-pub-3614176406931898/8850232667",
+  "admob_native_id": "ca-app-pub-3614176406931898/2667967694",
+  "admob_rewarded_id": "",
+  "admob_rewarded_interstitial_id": "",
+  "admob_open_app_id": "a-app-pub-3614176406931898~7138460087",
+  "admob_hpk_1": "car",
+  "admob_hpk_2": "fashion",
+  "admob_hpk_3": "sport",
+  "admob_hpk_4": "mobile",
+  "admob_hpk_5": "insurance",
+  "startapp_app_id": "",
+  "unity_id": "",
+  "unity_banner": "",
+  "unity_interstitial": "",
+  "interstitial_inverval": 10,
+  "list_ads": [
+    "ADMOB",
+    "UNITY",
+    "STARTAPP"
+  ]
+}
