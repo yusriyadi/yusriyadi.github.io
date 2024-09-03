@@ -1,0 +1,196 @@
+{
+  "images": [
+    {
+      "id": 1,
+      "feature": "fitur_1",
+      "image_url": "https://picsum.photos/id/23/200/300",
+      "order": 1
+    },
+    {
+      "id": 2,
+      "feature": "fitur_1",
+      "image_url": "https://picsum.photos/id/45/200/300",
+      "order": 2
+    },
+    {
+      "id": 3,
+      "feature": "fitur_1",
+      "image_url": "https://picsum.photos/id/67/200/300",
+      "order": 3
+    },
+    {
+      "id": 4,
+      "feature": "fitur_1",
+      "image_url": "https://picsum.photos/id/89/200/300",
+      "order": 4
+    },
+    {
+      "id": 5,
+      "feature": "fitur_2",
+      "image_url": "https://picsum.photos/id/12/200/300",
+      "order": 5
+    },
+    {
+      "id": 6,
+      "feature": "fitur_2",
+      "image_url": "https://picsum.photos/id/34/200/300",
+      "order": 6
+    },
+    {
+      "id": 7,
+      "feature": "fitur_2",
+      "image_url": "https://picsum.photos/id/56/200/300",
+      "order": 7
+    },
+    {
+      "id": 8,
+      "feature": "fitur_2",
+      "image_url": "https://picsum.photos/id/78/200/300",
+      "order": 8
+    },
+    {
+      "id": 9,
+      "feature": "fitur_3",
+      "image_url": "https://picsum.photos/id/11/200/300",
+      "order": 9
+    },
+    {
+      "id": 10,
+      "feature": "fitur_3",
+      "image_url": "https://picsum.photos/id/22/200/300",
+      "order": 10
+    },
+    {
+      "id": 11,
+      "feature": "fitur_3",
+      "image_url": "https://picsum.photos/id/33/200/300",
+      "order": 11
+    },
+    {
+      "id": 12,
+      "feature": "fitur_3",
+      "image_url": "https://picsum.photos/id/44/200/300",
+      "order": 12
+    },
+    {
+      "id": 13,
+      "feature": "fitur_4",
+      "image_url": "https://picsum.photos/id/55/200/300",
+      "order": 13
+    },
+    {
+      "id": 14,
+      "feature": "fitur_4",
+      "image_url": "https://picsum.photos/id/66/200/300",
+      "order": 14
+    },
+    {
+      "id": 15,
+      "feature": "fitur_4",
+      "image_url": "https://picsum.photos/id/77/200/300",
+      "order": 15
+    },
+    {
+      "id": 16,
+      "feature": "fitur_4",
+      "image_url": "https://picsum.photos/id/88/200/300",
+      "order": 16
+    },
+    {
+      "id": 17,
+      "feature": "fitur_1",
+      "image_url": "https://picsum.photos/id/99/200/300",
+      "order": 17
+    },
+    {
+      "id": 18,
+      "feature": "fitur_1",
+      "image_url": "https://picsum.photos/id/14/200/300",
+      "order": 18
+    },
+    {
+      "id": 19,
+      "feature": "fitur_1",
+      "image_url": "https://picsum.photos/id/29/200/300",
+      "order": 19
+    },
+    {
+      "id": 20,
+      "feature": "fitur_1",
+      "image_url": "https://picsum.photos/id/37/200/300",
+      "order": 20
+    },
+    {
+      "id": 21,
+      "feature": "fitur_2",
+      "image_url": "https://picsum.photos/id/48/200/300",
+      "order": 21
+    },
+    {
+      "id": 22,
+      "feature": "fitur_2",
+      "image_url": "https://picsum.photos/id/59/200/300",
+      "order": 22
+    },
+    {
+      "id": 23,
+      "feature": "fitur_2",
+      "image_url": "https://picsum.photos/id/71/200/300",
+      "order": 23
+    },
+    {
+      "id": 24,
+      "feature": "fitur_2",
+      "image_url": "https://picsum.photos/id/82/200/300",
+      "order": 24
+    },
+    {
+      "id": 25,
+      "feature": "fitur_3",
+      "image_url": "https://picsum.photos/id/91/200/300",
+      "order": 25
+    },
+    {
+      "id": 26,
+      "feature": "fitur_3",
+      "image_url": "https://picsum.photos/id/10/200/300",
+      "order": 26
+    },
+    {
+      "id": 27,
+      "feature": "fitur_3",
+      "image_url": "https://picsum.photos/id/24/200/300",
+      "order": 27
+    },
+    {
+      "id": 28,
+      "feature": "fitur_3",
+      "image_url": "https://picsum.photos/id/36/200/300",
+      "order": 28
+    },
+    {
+      "id": 29,
+      "feature": "fitur_4",
+      "image_url": "https://picsum.photos/id/48/200/300",
+      "order": 29
+    },
+    {
+      "id": 30,
+      "feature": "fitur_4",
+      "image_url": "https://picsum.photos/id/50/200/300",
+      "order": 30
+    },
+    {
+      "id": 31,
+      "feature": "fitur_4",
+      "image_url": "https://picsum.photos/id/64/200/300",
+      "order": 31
+    },
+    {
+      "id": 32,
+      "feature": "fitur_4",
+      "image_url": "https://picsum.photos/id/78/200/300",
+      "order": 32
+    }
+  ]
+}
