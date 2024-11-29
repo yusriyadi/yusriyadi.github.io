@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open IEEE Link</title>
+</head>
+<body>
+    <form onsubmit="openLink(event)">
+        <label for="documentId">Enter Document ID:</label>
+        <input type="text" id="documentId" name="documentId" required>
+        <button type="submit">Open Link</button>
+    </form>
+
+    <script>
+        function openLink(event) {
+            event.preventDefault();
+            const id = document.getElementById('documentId').value;
+            const url = `https://ieeexplore-ieee-org.ezproxy.ugm.ac.id/document/${id}`;
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>
