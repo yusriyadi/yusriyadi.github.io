@@ -1,0 +1,88 @@
+{
+  "videos": [
+    {
+      "id": 1,
+      "title": "Big Buck Bunny",
+      "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+      "thumbnail": "https://peach.blender.org/wp-content/uploads/title_anouncement.jpg"
+    },
+    {
+      "id": 2,
+      "title": "Elephant Dream",
+      "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+      "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Elephants_Dream_s1_proog.jpg/800px-Elephants_Dream_s1_proog.jpg"
+    },
+    {
+      "id": 3,
+      "title": "For Bigger Blazes",
+      "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+      "thumbnail": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg"
+    },
+    {
+      "id": 4,
+      "title": "Sintel Trailer",
+      "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+      "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/f/f3/Sintel_poster.jpg"
+    },
+    {
+      "id": 5,
+      "title": "Tears of Steel",
+      "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+      "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Tears_of_steel_poster.jpg"
+    },
+    {
+      "id": 6,
+      "title": "Piper",
+      "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Piper.mp4",
+      "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/0/0a/Piper_poster.jpg"
+    },
+    {
+      "id": 7,
+      "title": "The Secret Life of Walter Mitty",
+      "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TheSecretLifeOfWalterMitty.mp4",
+      "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/f/ff/The_Secret_Life_of_Walter_Mitty_poster.jpg"
+    },
+    {
+      "id": 8,
+      "title": "A Better Tomorrow",
+      "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ABetterTomorrow.mp4",
+      "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/9/91/A_Better_Tomorrow_1986.jpg"
+    },
+    {
+      "id": 9,
+      "title": "The Lego Movie",
+      "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TheLegoMovie.mp4",
+      "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/2/29/The_Lego_Movie_poster.jpg"
+    },
+    {
+      "id": 10,
+      "title": "The Matrix",
+      "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TheMatrix.mp4",
+      "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/d/dc/The_Matrix_1999_poster.jpg"
+    },
+    {
+      "id": 11,
+      "title": "Interstellar",
+      "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Interstellar.mp4",
+      "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/0/0b/Interstellar_2014_film_poster.jpg"
+    },
+    {
+      "id": 12,
+      "title": "Avatar",
+      "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Avatar.mp4",
+      "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/b/b0/Avatar-Teaser-Poster.jpg"
+    },
+    {
+      "id": 13,
+      "title": "Inception",
+      "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Inception.mp4",
+      "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/7/74/Inception_2010_film_poster.jpg"
+    },
+    {
+      "id": 14,
+      "title": "The Dark Knight",
+      "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TheDarkKnight.mp4",
+      "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/a/a9/The_Dark_Knight_2008_film_poster.jpg"
+    }
+  ]
+}
