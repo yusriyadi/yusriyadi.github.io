@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Analysis Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --bg-dark: #0f172a;
+            --card-dark: #1e293b;
+            --text-light: #f8fafc;
+            --text-gray: #94a3b8;
+            --border-color: #334155;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Utility Components */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .card {
+            background: var(--card-dark);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        /* Header Section */
+        header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        /* Upload Section */
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 16px;
+            padding: 4rem 2rem;
+            text-align: center;
+            background: rgba(30, 41, 59, 0.5);
+            transition: all 0.3s;
+            cursor: pointer;
+            margin-bottom: 2rem;
+        }
+
+        .upload-area:hover,
+        .upload-area.drag-active {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--text-gray);
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        /* Dashboard Grid */
+        .dashboard {
+            display: none;
+            /* Hidden by default */
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+        }
+
+        .col-span-12 {
+            grid-column: span 12;
+        }
+
+        .col-span-6 {
+            grid-column: span 6;
+        }
+
+        .col-span-4 {
+            grid-column: span 4;
+        }
+
+        .col-span-3 {
+            grid-column: span 3;
+        }
+
+        @media (max-width: 1024px) {
+
+            .col-span-6,
+            .col-span-4,
+            .col-span-3 {
+                grid-column: span 12;
+            }
+        }
+
+        /* Stats Cards */
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+            background: linear-gradient(to right, #fff, #cbd5e1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            color: var(--text-gray);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+        }
+
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.5);
+            color: var(--text-gray);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        th:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-light);
+        }
+
+        .sort-icon {
+            display: inline-block;
+            margin-left: 6px;
+            font-size: 0.8em;
+            opacity: 0.3;
+        }
+
+        th.active {
+            color: var(--primary);
+        }
+
+        th.active .sort-icon {
+            opacity: 1;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-light);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .endpoint {
+            font-family: monospace;
+            color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        /* Loading Overlay */
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .loader-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Max Duration Alert */
+        .alert-max {
+            border-left: 4px solid var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .json-pre {
+            background: #0f172a;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            color: #ccc;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .toggle-json {
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            text-decoration: underline;
+            margin-top: 0.5rem;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="loader-overlay" id="loader">
+        <div style="text-align: center;">
+            <div class="spinner"></div>
+            <p style="margin-top: 1rem; color: var(--text-gray);">Processing Logs...</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>Log Analytics</h1>
+            <div>
+                <span id="fileName" style="color: var(--text-gray); margin-right: 1rem;"></span>
+                <button class="btn" onclick="document.getElementById('fileInput').click()">
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    Select Log File
+                </button>
+            </div>
+        </header>
+
+        <input type="file" id="fileInput" accept=".log,.txt,.json">
+
+        <!-- Initial State -->
+        <div id="uploadHero" class="upload-area" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-icon">📂</div>
+            <h2 style="margin-bottom: 0.5rem; color: var(--text-light);">Drop your log file here</h2>
+            <p style="color: var(--text-gray);">Supports .log, .txt (JSON format)</p>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div id="dashboard" class="dashboard">
+
+            <!-- Time Range Info -->
+            <div class="col-span-12"
+                style="background: rgba(30, 41, 59, 0.3); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); display: flex; gap: 2rem; align-items: center; flex-wrap: wrap;">
+                <div>
+                    <span class="stat-label" style="margin-right:0.5rem">📅 Period Start:</span>
+                    <span style="font-weight: 600; color: var(--text-light)" id="statStartTime">-</span>
+                </div>
+                <div>
+                    <span class="stat-label" style="margin-right:0.5rem">📅 Period End:</span>
+                    <span style="font-weight: 600; color: var(--text-light)" id="statEndTime">-</span>
+                </div>
+                <div>
+                    <span class="stat-label" style="margin-right:0.5rem">⏱ Duration:</span>
+                    <span style="font-weight: 600; color: var(--primary)" id="statTotalDuration">-</span>
+                </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="card col-span-3">
+                <div class="stat-label">Total Requests</div>
+                <div class="stat-value" id="statTotalLines">0</div>
+            </div>
+            <div class="card col-span-3">
+                <div class="stat-label">Unique Endpoints</div>
+                <div class="stat-value" id="statUniqueEndpoints">0</div>
+            </div>
+            <div class="card col-span-3">
+                <div class="stat-label">Avg Response Time</div>
+                <div class="stat-value" id="statAvgDuration">0s</div>
+            </div>
+            <div class="card col-span-3 highlight-card">
+                <div class="stat-label">Max Response Time</div>
+                <div class="stat-value" style="color: var(--danger); -webkit-text-fill-color: initial;"
+                    id="statMaxDuration">0s</div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="card col-span-12">
+                <h3 style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    Response Time Over Time
+                    <button class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;" onclick="resetZoom()">Reset
+                        Zoom</button>
+                </h3>
+                <div class="chart-container">
+                    <canvas id="timeChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Max Duration Detail -->
+            <div class="card col-span-12 alert-max" id="maxDurationCard" style="display: none;">
+                <h3 style="color: var(--danger); display: flex; align-items: center; gap: 0.5rem;">
+                    <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    Slowest Request Detected
+                </h3>
+                <div
+                    style="margin-top: 1rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div>
+                        <span class="stat-label">Endpoint</span>
+                        <div style="font-weight: 600;" id="slowestEndpoint">-</div>
+                    </div>
+                    <div>
+                        <span class="stat-label">Duration</span>
+                        <div style="font-weight: 600;" id="slowestDuration">-</div>
+                    </div>
+                    <div>
+                        <span class="stat-label">Time</span>
+                        <div style="font-weight: 600;" id="slowestTime">-</div>
+                    </div>
+                    <div>
+                        <span class="stat-label">Line Number</span>
+                        <div style="font-weight: 600;" id="slowestLine">-</div>
+                    </div>
+                </div>
+                <a class="toggle-json" onclick="toggleJson()">View Full Log Entry</a>
+                <pre class="json-pre" id="slowestJson"></pre>
+            </div>
+
+            <!-- Endpoints Table -->
+            <div class="card col-span-12">
+                <h3 style="margin-bottom: 1.5rem;">Endpoint Performance</h3>
+                <div class="table-responsive">
+                    <table id="endpointsTable">
+                        <thead>
+                            <tr>
+                                <th onclick="sortTable('uri')" id="th-uri">Endpoint <span class="sort-icon">⇅</span>
+                                </th>
+                                <th onclick="sortTable('count')" id="th-count">Hits <span class="sort-icon">⇅</span>
+                                </th>
+                                <th onclick="sortTable('avg')" id="th-avg" class="active">Avg Duration <span
+                                        class="sort-icon">↓</span></th>
+                                <th onclick="sortTable('min')" id="th-min">Min <span class="sort-icon">⇅</span></th>
+                                <th onclick="sortTable('max')" id="th-max">Max <span class="sort-icon">⇅</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Rows injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Elements
+        const fileInput = document.getElementById('fileInput');
+        const uploadHero = document.getElementById('uploadHero');
+        const dashboard = document.getElementById('dashboard');
+        const loader = document.getElementById('loader');
+        const fileNameDisplay = document.getElementById('fileName');
+
+        // State
+        let tableData = [];
+        let sortConfig = { key: 'avg', direction: 'desc' };
+
+        // Chart instances
+        let timeChart = null;
+
+        // Helper: Drag and Drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadHero.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadHero.addEventListener(eventName, () => uploadHero.classList.add('drag-active'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadHero.addEventListener(eventName, () => uploadHero.classList.remove('drag-active'), false);
+        });
+
+        uploadHero.addEventListener('drop', handleDrop, false);
+        fileInput.addEventListener('change', (e) => handleFiles(e.target.files), false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                processFile(files[0]);
+            }
+        }
+
+        function processFile(file) {
+            fileNameDisplay.textContent = file.name;
+            loader.classList.add('active');
+            uploadHero.style.display = 'none';
+            dashboard.style.display = 'none';
+
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                try {
+                    const content = e.target.result;
+                    const lines = content.split(/\r?\n/);
+                    analyzeLogs(lines);
+                } catch (err) {
+                    console.error("Error reading file:", err);
+                    alert("Error parsing file. Please ensure it's a valid text log.");
+                } finally {
+                    loader.classList.remove('active');
+                    dashboard.style.display = 'grid';
+                }
+            };
+
+            reader.readAsText(file);
+        }
+
+        function parseLine(line) {
+            try {
+                if (!line.trim()) return null;
+                return JSON.parse(line);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function analyzeLogs(lines) {
+            // Data Structures
+            const chartTimes = [];
+            const chartDurations = [];
+            const chartLines = [];
+            const endpointStats = {}; // { uri: { count, sum, min, max, durations[] } }
+            let totalLines = 0;
+            let maxDuration = -1;
+            let maxDurationEntry = null;
+            let maxDurationLine = 0;
+
+            let minTs = Infinity;
+            let maxTs = -Infinity;
+
+            lines.forEach((line, index) => {
+                const entry = parseLine(line);
+                if (!entry) return;
+
+                totalLines++;
+
+                // Extract Fields
+                const ts = entry.ts || entry.timestamp;
+                const duration = parseFloat(entry.duration);
+                const request = entry.request || {};
+                let uri = request.uri || request.url || "unknown";
+
+                // Basic Validation
+                if (ts === undefined || isNaN(duration)) return;
+
+                // Track Time Range
+                if (ts < minTs) minTs = ts;
+                if (ts > maxTs) maxTs = ts;
+
+                // Chart Data
+                // Convert epoch to JS Date if needed (assuming ts is epoch seconds like python script)
+                const date = new Date(ts * 1000);
+                if (!isNaN(date.getTime())) {
+                    chartTimes.push(date.toISOString());
+                    chartDurations.push(duration);
+                    chartLines.push(index + 1);
+                }
+
+                // Endpoint Stats
+                try {
+                    // Remove query params roughly
+                    if (uri.includes('?')) {
+                        uri = uri.split('?')[0];
+                    }
+                    // Handle full URLs to get path
+                    if (uri.startsWith('http')) {
+                        uri = new URL(uri).pathname;
+                    }
+                } catch (e) {
+                    // fallback use raw uri
+                }
+
+                if (!endpointStats[uri]) {
+                    endpointStats[uri] = { count: 0, sum: 0, min: Infinity, max: -Infinity };
+                }
+                const stats = endpointStats[uri];
+                stats.count++;
+                stats.sum += duration;
+                if (duration < stats.min) stats.min = duration;
+                if (duration > stats.max) stats.max = duration;
+
+                // Max Duration Tracking
+                if (duration > maxDuration) {
+                    maxDuration = duration;
+                    maxDurationEntry = entry;
+                    maxDurationLine = index + 1;
+                }
+            });
+
+            // --- Render UI ---
+
+            // 1. Top Level Stats
+            document.getElementById('statTotalLines').textContent = totalLines.toLocaleString();
+            document.getElementById('statUniqueEndpoints').textContent = Object.keys(endpointStats).length.toLocaleString();
+
+            // Time Stats
+            if (minTs !== Infinity && maxTs !== -Infinity) {
+                const startDate = new Date(minTs * 1000);
+                const endDate = new Date(maxTs * 1000);
+                const diffSeconds = maxTs - minTs;
+                const diffHours = (diffSeconds / 3600).toFixed(1);
+
+                document.getElementById('statStartTime').textContent = startDate.toLocaleString();
+                document.getElementById('statEndTime').textContent = endDate.toLocaleString();
+                document.getElementById('statTotalDuration').textContent = `${diffHours} Hours`;
+            } else {
+                document.getElementById('statStartTime').textContent = '-';
+                document.getElementById('statEndTime').textContent = '-';
+                document.getElementById('statTotalDuration').textContent = '-';
+            }
+
+            const overallAvg = chartDurations.reduce((a, b) => a + b, 0) / (chartDurations.length || 1);
+            document.getElementById('statAvgDuration').textContent = overallAvg.toFixed(3) + 's';
+            document.getElementById('statMaxDuration').textContent = maxDuration.toFixed(3) + 's';
+
+            // 2. Max Duration Alert
+            if (maxDurationEntry) {
+                document.getElementById('maxDurationCard').style.display = 'block';
+                const req = maxDurationEntry.request || {};
+                document.getElementById('slowestEndpoint').textContent = req.uri || 'Unknown';
+                document.getElementById('slowestDuration').textContent = maxDuration.toFixed(4) + ' s';
+
+                const ts = maxDurationEntry.ts || maxDurationEntry.timestamp;
+                const timeStr = ts ? new Date(ts * 1000).toLocaleString() : '-';
+                document.getElementById('slowestTime').textContent = timeStr;
+
+                document.getElementById('slowestLine').textContent = maxDurationLine;
+                document.getElementById('slowestJson').textContent = JSON.stringify(maxDurationEntry, null, 2);
+            }
+
+            // 3. Chart
+            renderChart(chartTimes, chartDurations, chartLines);
+
+            // 4. Table
+            // Transform stats to array for sorting
+            tableData = Object.entries(endpointStats).map(([uri, data]) => ({
+                uri,
+                ...data,
+                avg: data.sum / data.count
+            }));
+
+            // Initial Sort & Render
+            sortTable('avg', 'desc');
+        }
+
+        function renderChart(labels, data, lines) {
+            const ctx = document.getElementById('timeChart').getContext('2d');
+
+            if (timeChart) timeChart.destroy();
+
+            // Downsample if too many points for performance (basic logic)
+            // If > 2000 points, take every Nth
+            let finalLabels = labels;
+            let finalData = data;
+            let finalLines = lines;
+
+            if (labels.length > 2000) {
+                const targetPoints = 2000;
+                const step = Math.ceil(labels.length / targetPoints);
+
+                finalLabels = [];
+                finalData = [];
+                finalLines = [];
+
+                for (let i = 0; i < labels.length; i += step) {
+                    let maxVal = -1;
+                    let maxIndex = -1;
+
+                    // Find max within the bucket to preserve spikes
+                    for (let j = i; j < Math.min(i + step, labels.length); j++) {
+                        if (data[j] > maxVal) {
+                            maxVal = data[j];
+                            maxIndex = j;
+                        }
+                    }
+
+                    if (maxIndex !== -1) {
+                        finalLabels.push(labels[maxIndex]);
+                        finalData.push(data[maxIndex]);
+                        finalLines.push(lines[maxIndex]);
+                    }
+                }
+            }
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(99, 102, 241, 0.5)'); // Top color: primary with opacity
+            gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)'); // Bottom color: transparent
+
+            timeChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: finalLabels,
+                    datasets: [{
+                        label: 'Response Time (s)',
+                        data: finalData,
+                        borderColor: '#6366f1',
+                        backgroundColor: gradient,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#6366f1',
+                        borderWidth: 1.5,
+                        fill: true,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        zoom: {
+                            limits: {
+                                x: { min: 'original', max: 'original' },
+                                y: { min: 'original', max: 'original' }
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'x',
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleColor: '#f8fafc',
+                            bodyColor: '#cbd5e1',
+                            borderColor: '#334155',
+                            borderWidth: 1,
+                            padding: 10,
+                            displayColors: false,
+                            callbacks: {
+                                title: (tooltipItems) => {
+                                    const d = new Date(tooltipItems[0].label);
+                                    return d.toLocaleString();
+                                },
+                                label: (context) => {
+                                    const index = context.dataIndex;
+                                    const lineNum = finalLines[index];
+                                    const val = context.raw;
+                                    return [
+                                        `Duration: ${val.toFixed(4)}s`,
+                                        `Line #: ${lineNum}`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            grid: {
+                                display: true,
+                                color: '#334155',
+                                borderDash: [5, 5],
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                maxTicksLimit: 10,
+                                autoSkip: true,
+                                maxRotation: 0,
+                                callback: function (value, index, values) {
+                                    // value is index for category scale, but label is date string
+                                    const label = this.getLabelForValue(value);
+                                    if (!label) return '';
+                                    const d = new Date(label);
+                                    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                                }
+                            },
+                            title: { display: true, text: 'Time (Local)', color: '#64748b' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#334155',
+                                borderDash: [5, 5],
+                                drawBorder: false
+                            },
+                            ticks: { color: '#94a3b8' },
+                            title: { display: true, text: 'Duration (s)', color: '#64748b' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function sortTable(key, forceDirection = null) {
+            // Determine direction
+            if (forceDirection) {
+                sortConfig.direction = forceDirection;
+            } else {
+                // Toggle if clicking same key, otherwise default to desc for everything (usually better for numbers)
+                if (sortConfig.key === key) {
+                    sortConfig.direction = sortConfig.direction === 'desc' ? 'asc' : 'desc';
+                } else {
+                    sortConfig.direction = 'desc';
+                }
+            }
+            sortConfig.key = key;
+
+            // Update Headers UI
+            document.querySelectorAll('th').forEach(th => {
+                th.classList.remove('active');
+                const icon = th.querySelector('.sort-icon');
+                if (icon) icon.textContent = '⇅';
+            });
+
+            const activeTh = document.getElementById(`th-${key}`);
+            if (activeTh) {
+                activeTh.classList.add('active');
+                const icon = activeTh.querySelector('.sort-icon');
+                if (icon) icon.textContent = sortConfig.direction === 'asc' ? '↑' : '↓';
+            }
+
+            // Sort Data
+            tableData.sort((a, b) => {
+                let valA = a[key];
+                let valB = b[key];
+
+                // String comparison for URI
+                if (typeof valA === 'string') {
+                    valA = valA.toLowerCase();
+                    valB = valB.toLowerCase();
+                }
+
+                if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+                if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.querySelector('#endpointsTable tbody');
+            tbody.innerHTML = '';
+
+            tableData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                <td><span class="endpoint">${row.uri}</span></td>
+                <td>${row.count}</td>
+                <td>${row.avg.toFixed(4)}s</td>
+                <td>${row.min.toFixed(4)}s</td>
+                <td>${row.max.toFixed(4)}s</td>
+            `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.toggleJson = function () {
+            const el = document.getElementById('slowestJson');
+            if (el.style.display === 'none' || !el.style.display) {
+                el.style.display = 'block';
+            } else {
+                el.style.display = 'none';
+            }
+        }
+
+        function resetZoom() {
+            if (timeChart) timeChart.resetZoom();
+        }
+    </script>
+
+</body>
+
+</html>
