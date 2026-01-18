@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Log Viewer V2 – Advanced</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        /* --- Reset & Base --- */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- Layout --- */
+        .app-header {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            flex-shrink: 0;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .brand {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #4f46e5;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 140px;
+        }
+
+        .brand svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        /* Search Bar in Header */
+        .search-container {
+            flex: 1;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.5rem 1rem 0.5rem 2.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: #f9fafb;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            background: #fff;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Filters Bar */
+        .filters-bar {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-shrink: 0;
+            overflow-x: auto;
+        }
+
+        select.filter-select {
+            padding: 0.4rem 2rem 0.4rem 0.8rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background-color: #fff;
+            font-size: 0.85rem;
+            color: #374151;
+            cursor: pointer;
+            outline: none;
+        }
+
+        select.filter-select:hover {
+            border-color: #9ca3af;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .btn-upload {
+            border: 1px solid #d1d5db;
+            color: #374151;
+            background-color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-upload:hover {
+            background-color: #f9fafb;
+        }
+
+        .file-input-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #d1d5db;
+            color: #374151;
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-outline:hover {
+            background: #f3f4f6;
+            border-color: #9ca3af;
+        }
+
+        /* --- Main Content (Split View?) or List View --- */
+        .main-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            scroll-behavior: smooth;
+        }
+
+        /* Log Card */
+        .log-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: box-shadow 0.2s;
+        }
+
+        .log-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .log-header {
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border-bottom: 1px solid #f3f4f6;
+            background: #fdfdfd;
+            cursor: pointer;
+        }
+
+        .log-header:hover {
+            background: #f8fafc;
+        }
+
+        .badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        /* Green */
+        .badge-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Red */
+        .badge-slow {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        /* Yellow */
+
+        .log-time {
+            font-size: 0.85rem;
+            color: #6b7280;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .log-endpoint {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #1f2937;
+            flex: 1;
+            word-break: break-all;
+        }
+
+        .log-meta {
+            font-size: 0.8rem;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .log-body {
+            display: none;
+            /* hidden by default */
+            padding: 1rem;
+            background: #fafafa;
+            border-top: 1px solid #f3f4f6;
+            font-family: 'Menlo', 'Monaco', monospace;
+            font-size: 0.8rem;
+        }
+
+        .log-card.open .log-body {
+            display: block;
+        }
+
+        .json-block {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #374151;
+            margin-bottom: 1rem;
+        }
+
+        .label {
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 0.25rem;
+            display: block;
+            font-family: sans-serif;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Empty State */
+        .empty-state {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            text-align: center;
+        }
+
+        .empty-state p {
+            margin-top: 1rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Syntax Highlight Colors (Simple) */
+        .key {
+            color: #7c3aed;
+        }
+
+        .string {
+            color: #059669;
+        }
+
+        .number {
+            color: #d97706;
+        }
+
+        .boolean {
+            color: #2563eb;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js"></script>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="app-header">
+        <div class="brand">
+            <svg viewBox="0 0 24 24">
+                <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" />
+            </svg>
+            <span>LogViewer V2</span>
+        </div>
+        <div class="search-container hidden" id="searchBox">
+            <svg class="search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input type="text" id="searchInput" class="search-input"
+                placeholder="Search UUID, Response, or Endpoint...">
+        </div>
+        <div style="width: 140px;"> <!-- spacer to balance logo --> </div>
+    </header>
+
+    <!-- Filters & Controls -->
+    <div class="filters-bar">
+        <div class="file-input-wrapper">
+            <button class="btn-upload">📂 Upload ZIP</button>
+            <input type="file" id="localZip" accept=".zip">
+        </div>
+
+        <div class="separator" style="width:1px; height:24px; background:#e5e7eb;"></div>
+
+        <select id="dateSelect" class="filter-select hidden">
+            <option value="">Select Date</option>
+        </select>
+
+        <select id="endpointSelect" class="filter-select hidden">
+            <option value="all">All Endpoints</option>
+        </select>
+
+        <select id="statusSelect" class="filter-select hidden">
+            <option value="all">All Status</option>
+            <option value="200">200 OK</option>
+            <option value="error">Errors</option>
+            <option value="slow">Slow (>2s)</option>
+        </select>
+
+        <div style="flex:1"></div>
+        <span id="logCount" style="font-size:0.85rem; color:#6b7280; margin-right: 1rem;"></span>
+        <button id="downloadBtn" class="btn-outline hidden">Download Logs</button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-area" id="mainArea">
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state">
+            <svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <p>Upload a NetworkLog ZIP to begin analyzing.</p>
+        </div>
+
+        <!-- Logs List Container -->
+        <div id="logsList" style="display:none; flex-direction:column; gap:1rem;"></div>
+    </div>
+
+    <script>
+        (function () {
+            // --- Elements ---
+            const localZipInput = document.getElementById('localZip');
+            const dateSelect = document.getElementById('dateSelect');
+            const endpointSelect = document.getElementById('endpointSelect');
+            const statusSelect = document.getElementById('statusSelect');
+            const searchInput = document.getElementById('searchInput');
+            const logsList = document.getElementById('logsList');
+            const emptyState = document.getElementById('emptyState');
+            const logCount = document.getElementById('logCount');
+            const searchBox = document.getElementById('searchBox');
+            const downloadBtn = document.getElementById('downloadBtn');
+
+            // --- State ---
+            let zipEntries = {};
+            let storedPassword = '';
+            let allLogs = []; // parsed logs
+            let currentFilteredLogs = [];
+
+            const DEFAULT_KEY = 'NUTAPOSJOGJA';
+
+            // --- Crypto Logic ---
+            const generateKey = pwd => {
+                const hash = CryptoJS.SHA256(pwd);
+                const words = hash.words.slice(0, 4);
+                return CryptoJS.lib.WordArray.create(words, 16);
+            };
+
+            const decryptBase64 = (b64, keys) => {
+                try {
+                    const ct = CryptoJS.enc.Base64.parse(b64);
+                    for (const k of keys) {
+                        try {
+                            const dec = CryptoJS.AES.decrypt({ ciphertext: ct }, k, { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7 });
+                            const txt = dec.toString(CryptoJS.enc.Utf8);
+                            if (txt) return txt;
+                        } catch (e) { }
+                    }
+                } catch (e) { }
+                return null;
+            };
+
+            const replaceEncrypted = (text, keys) => {
+                // Fast check
+                if (!text.includes('#START#')) return text;
+
+                return text.replace(/#START#(.*?)#END#/g, (match, p1) => {
+                    const dec = decryptBase64(p1.trim(), keys);
+                    return dec !== null ? dec : match;
+                });
+            };
+
+            // --- Parsing Logic ---
+            const parseLogs = (rawText) => {
+                const logs = [];
+                // Split by marker
+                const blocks = rawText.split(/========== Request Log ==========/g);
+
+                blocks.forEach(block => {
+                    if (!block.trim()) return;
+
+                    // Separate rDb lines from the block
+                    const lines = block.split(/\r?\n/);
+                    const rdbLines = [];
+                    const otherLines = [];
+
+                    lines.forEach(line => {
+                        if (line.trim().startsWith('rDb@')) {
+                            rdbLines.push(line.trim());
+                        } else {
+                            otherLines.push(line);
+                        }
+                    });
+
+                    // 1. Process Network Log (if exists in this block)
+                    const networkChunk = otherLines.join('\n').trim();
+                    if (networkChunk.length > 0 && (networkChunk.includes('UUID:') || networkChunk.includes('Endpoint:'))) {
+                        const logItem = {
+                            type: 'network',
+                            raw: networkChunk,
+                            uuid: '',
+                            time: '',
+                            endpoint: '',
+                            status: '',
+                            duration: 0,
+                            durationStr: '',
+                            params: '',
+                            responseData: ''
+                        };
+
+                        // Simple regex extraction
+                        const matchUUID = networkChunk.match(/UUID:\s*(.+)/);
+                        if (matchUUID) logItem.uuid = matchUUID[1].trim();
+
+                        const matchTime = networkChunk.match(/Time Request:\s*(.+)/);
+                        if (matchTime) logItem.time = matchTime[1].trim();
+
+                        const matchEndpoint = networkChunk.match(/Endpoint:\s*(.+)/);
+                        if (matchEndpoint) logItem.endpoint = matchEndpoint[1].trim();
+
+                        const matchStatus = networkChunk.match(/Response Code:\s*(\d+)/);
+                        if (matchStatus) logItem.status = matchStatus[1].trim();
+
+                        // Support both formats for Duration if available
+                        const matchDuration = networkChunk.match(/Response Time:\s*([\d,.]+)\s*ms/);
+                        if (matchDuration) {
+                            logItem.durationStr = matchDuration[1].replace(',', '.') + ' ms';
+                            logItem.duration = parseFloat(matchDuration[1].replace(',', '.'));
+                        }
+
+                        // Extract multi-line JSONs safely
+                        const matchParams = networkChunk.match(/Params:\s*([\s\S]*?)(?=\nHeaders:)/);
+                        if (matchParams) logItem.params = matchParams[1].trim();
+
+                        // Extract Headers
+                        const matchHeaders = networkChunk.match(/Headers:\s*([\s\S]*?)(?=\n(?:Response Code|Response Time|Data|Response Data):)/);
+                        // Fallback if Headers is followed by empty line or end of block
+                        const matchHeadersFallback = networkChunk.match(/Headers:\s*(.*)/);
+
+                        if (matchHeaders) logItem.headers = matchHeaders[1].trim();
+                        else if (matchHeadersFallback && !logItem.params) {
+                            // Only use fallback if we didn't match cleanly, careful not to grab too much
+                            // Actually, let's just grab the line if simplified
+                            logItem.headers = matchHeadersFallback[1].trim();
+                        }
+
+                        // If logic above is too complex, let's stick to the structure:
+                        // Params -> Headers -> Response Code
+                        const headersBlock = networkChunk.split('Headers:')[1];
+                        if (headersBlock) {
+                            // Take until "Response Code"
+                            const hParts = headersBlock.split(/Response Code:|Response Time:/);
+                            if (hParts[0]) logItem.headers = hParts[0].trim();
+                        }
+
+                        const matchRespV1 = networkChunk.match(/Response Data:\s*([\s\S]*?)(?=\n-{10}|$)/);
+                        const matchRespV2 = networkChunk.match(/Data:\s*([\s\S]*?)(?=\n-{10}|$)/);
+
+                        if (matchRespV1) logItem.responseData = matchRespV1[1].trim();
+                        else if (matchRespV2) logItem.responseData = matchRespV2[1].trim();
+
+                        logs.push(logItem);
+                    }
+
+                    // 2. Process System Logs (rDb lines)
+                    rdbLines.forEach(line => {
+                        let time = '';
+                        // Try to extract time: rDb@(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})
+                        const timeMatch = line.match(/rDb@(Error@)?(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/);
+                        if (timeMatch) time = timeMatch[2];
+
+                        logs.push({
+                            type: 'system',
+                            raw: line,
+                            data: line,
+                            time: time,
+                            isError: line.includes('@Error@')
+                        });
+                    });
+                });
+                return logs;
+            };
+
+            // --- Rendering ---
+            const formatJSON = (str) => {
+                if (!str || str === 'No Body') return str;
+                try {
+                    // Sometimes params are like "token=..." or "devid=..." not JSON
+                    if (str.startsWith('{') || str.startsWith('[')) {
+                        const obj = JSON.parse(str);
+                        return JSON.stringify(obj, null, 2);
+                    }
+                } catch (e) { }
+                return str;
+            };
+
+            const syntaxHighlight = (json) => {
+                if (typeof json !== 'string') {
+                    json = JSON.stringify(json, undefined, 2);
+                }
+                json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                    var cls = 'number';
+                    if (/^"/.test(match)) {
+                        if (/:$/.test(match)) {
+                            cls = 'key';
+                        } else {
+                            cls = 'string';
+                        }
+                    } else if (/true|false/.test(match)) {
+                        cls = 'boolean';
+                    } else if (/null/.test(match)) {
+                        cls = 'null';
+                    }
+                    return '<span class="' + cls + '">' + match + '</span>';
+                });
+            }
+
+            const getBaseEndpoint = (url) => {
+                try {
+                    const u = new URL(url);
+                    return u.pathname;
+                } catch (e) { return url; }
+            };
+
+            const renderLogs = (logs) => {
+                logsList.innerHTML = '';
+                if (logs.length === 0) {
+                    logsList.innerHTML = '<div style="text-align:center; padding:2rem; color:#9ca3af">No matching logs found.</div>';
+                    logCount.textContent = '0 logs';
+                    return;
+                }
+
+                // Limit rendering for performance if too many? For now render first 100? No, let's render all but lazy?
+                // Let's render chunks if needed. For now simple loop.
+                const frag = document.createDocumentFragment();
+
+                logs.forEach(log => {
+                    const el = document.createElement('div');
+
+                    if (log.type === 'system') {
+                        // --- System Log Card ---
+                        el.className = 'log-card ' + (log.isError ? 'system-error' : 'system-log');
+                        // Add specific styling class or inline styles
+                        el.style.borderLeft = log.isError ? '4px solid #ef4444' : '4px solid #3b82f6';
+                        el.style.backgroundColor = log.isError ? '#fef2f2' : '#eff6ff';
+
+                        el.innerHTML = `
+                            <div style="padding: 0.75rem 1rem;">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.75rem; color:#6b7280;">
+                                    <span style="font-weight:700; color:${log.isError ? '#b91c1c' : '#1d4ed8'}">SYSTEM LOG</span>
+                                    <span>${log.time || ''}</span>
+                                </div>
+                                <div style="font-family:monospace; font-size:0.85rem; white-space:pre-wrap; word-break:break-all; color:${log.isError ? '#991b1b' : '#1e3a8a'}">${log.data}</div>
+                            </div>
+                        `;
+                    } else {
+                        // --- Network Log Card ---
+                        el.className = 'log-card';
+                        const isError = log.status !== '200';
+                        const isSlow = log.duration > 2000;
+
+                        let statusBadge = `<span class="badge ${isError ? 'badge-error' : 'badge-success'}">${log.status || '???'}</span>`;
+                        if (isSlow) statusBadge += ` <span class="badge badge-slow">SLOW</span>`;
+
+                        // Format JSONs
+                        const prettyParams = syntaxHighlight(formatJSON(log.params));
+                        const prettyHeaders = log.headers ? syntaxHighlight(formatJSON(log.headers)) : '<span style="color:#9ca3af; font-style:italic;">No Headers</span>';
+                        const prettyResp = syntaxHighlight(formatJSON(log.responseData));
+
+                        // Clean path
+                        const shortPath = getBaseEndpoint(log.endpoint);
+                        // Guess Method: If params is "No Body" or empty -> GET, else POST
+                        const method = (log.params && log.params !== 'No Body' && log.params !== '[]') ? 'POST' : 'GET';
+
+                        el.innerHTML = `
+                        <div class="log-header" onclick="this.parentElement.classList.toggle('open')">
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:4px; min-width:60px;">
+                                ${statusBadge}
+                                <span style="font-size:0.7rem; font-weight:700; color:#6b7280;">${method}</span>
+                            </div>
+                            
+                            <div style="flex:1; overflow:hidden;">
+                                <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:0.25rem;">
+                                    <span class="log-endpoint" title="${log.endpoint}">${shortPath}</span>
+                                    ${log.durationStr ? `<span style="font-size:0.8rem; font-weight:600; color:${isSlow ? '#c2410c' : '#16a34a'}">${log.durationStr}</span>` : ''}
+                                </div>
+                                <div class="log-meta">
+                                    <span style="font-weight:500; color:#374151;">${log.time || 'No Time'}</span>
+                                    <span style="color:#e5e7eb">|</span>
+                                    <span style="font-family:monospace; font-size:0.75rem;">${log.uuid}</span>
+                                </div>
+                                <div style="font-size:0.75rem; color:#9ca3af; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                    ${log.endpoint}
+                                </div>
+                            </div>
+                            <svg width="20" height="20" fill="none" stroke="#9ca3af" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div class="log-body">
+                            <div style="margin-bottom:1rem;">
+                                <span class="label">Full Endpoint</span>
+                                <div style="font-family:monospace; word-break:break-all; background:#fff; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px;">${log.endpoint}</div>
+                            </div>
+
+                            <span class="label">Params / Body</span>
+                            <div class="json-block">${prettyParams}</div>
+
+                            <span class="label">Headers</span>
+                            <div class="json-block" style="background:#f8fafc; border:1px dashed #e2e8f0; padding:0.5rem;">${prettyHeaders}</div>
+                            
+                            <span class="label">Response Data</span>
+                            <div class="json-block">${prettyResp}</div>
+                        </div>
+                    `;
+                    }
+                    frag.appendChild(el);
+                });
+
+                logsList.appendChild(frag);
+                logCount.textContent = `${logs.length} logs`;
+                logsList.style.display = 'flex';
+                emptyState.classList.add('hidden');
+            };
+
+            // --- Filtering Logic ---
+            const applyFilters = () => {
+                let res = allLogs;
+
+                // Endpoint Filter
+                const ep = endpointSelect.value;
+                if (ep !== 'all') {
+                    res = res.filter(l => getBaseEndpoint(l.endpoint) === ep);
+                }
+
+                // Status Filter
+                const st = statusSelect.value;
+                if (st === 'error') res = res.filter(l => l.status !== '200');
+                else if (st === 'slow') res = res.filter(l => l.duration > 2000);
+                else if (st === '200') res = res.filter(l => l.status === '200');
+
+                // Search
+                const q = searchInput.value.toLowerCase().trim();
+                if (q) {
+                    res = res.filter(l =>
+                        l.raw.toLowerCase().includes(q)
+                    );
+                }
+
+                renderLogs(res);
+            };
+
+            // --- Download Helper ---
+            const downloadTextFile = (filename, text) => {
+                const blob = new Blob([text], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+                URL.revokeObjectURL(url); a.remove();
+            };
+
+            // --- Zip Handling ---
+            const buildDateFolders = entries => {
+                const dates = new Set();
+                const re = /^\d{4}-\d{2}-\d{2}$/;
+                Object.keys(entries).forEach(p => {
+                    const parts = p.replace(/\\\\/g, '/').split('/').filter(Boolean);
+                    if (re.test(parts[0])) dates.add(parts[0]);
+                    else if (parts[1] && re.test(parts[1])) dates.add(parts[1]);
+                });
+                return Array.from(dates).sort();
+            };
+
+            const getFilesForDate = (entries, date) => {
+                const re = new RegExp('(?:^|.*/)' + date.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&') + '/network_logs_.*\\.log$');
+                return Object.keys(entries).filter(n => re.test(n.replace(/\\\\/g, '/')));
+            };
+
+            const uint8ToUtf8 = u8 => new TextDecoder('utf-8', { fatal: false }).decode(u8);
+
+            const processZip = async (ab, filename) => {
+                const data = await new Promise((res, rej) => {
+                    fflate.unzip(new Uint8Array(ab), { filter: () => true }, (e, d) => e ? rej(e) : res(d));
+                });
+
+                zipEntries = {};
+                Object.entries(data).forEach(([k, v]) => {
+                    if (v && v.length !== undefined) zipEntries[k.replace(/\\\\/g, '/')] = v;
+                });
+
+                const m = filename.match(/NetworkLog-(\d+)-(\d+)/);
+                storedPassword = m ? `${m[1]}.${m[2]}` : '';
+
+                const dates = buildDateFolders(zipEntries);
+
+                dateSelect.innerHTML = '<option value="">Select Date</option>' + dates.map(d => `<option value="${d}">${d}</option>`).join('');
+
+                dateSelect.classList.remove('hidden');
+                emptyState.querySelector('p').textContent = 'Please select a date from the dropdown.';
+            };
+
+            // --- Event Listeners ---
+            localZipInput.addEventListener('change', async () => {
+                const file = localZipInput.files?.[0];
+                if (!file) return;
+                try {
+                    emptyState.classList.remove('hidden');
+                    logsList.style.display = 'none';
+                    emptyState.querySelector('p').textContent = 'Processing ZIP...';
+
+                    const ab = await file.arrayBuffer();
+                    await processZip(ab, file.name);
+                } catch (e) {
+                    alert('Error: ' + e.message);
+                }
+            });
+
+            dateSelect.addEventListener('change', () => {
+                const date = dateSelect.value;
+                if (!date) return;
+
+                const files = getFilesForDate(zipEntries, date);
+                let merged = '';
+                files.forEach(n => merged += uint8ToUtf8(zipEntries[n]));
+
+                // Decrypt Entire Block first? Or decrypt line by line?
+                // Efficient approach: Decrypt whole text first.
+                const keys = [];
+                if (storedPassword) keys.push(generateKey(storedPassword));
+                keys.push(generateKey(DEFAULT_KEY));
+
+                // NOTE: Decrypting the whole string line-by-line is expensive but necessary for regex validity
+                // We'll replace markers 
+                const decryptedText = replaceEncrypted(merged, keys);
+
+                // Parse
+                allLogs = parseLogs(decryptedText);
+
+                // Populate Filters
+                const endpoints = new Set(allLogs.map(l => getBaseEndpoint(l.endpoint)));
+                endpointSelect.innerHTML = '<option value="all">All Endpoints</option>' +
+                    Array.from(endpoints).sort().map(e => `<option value="${e}">${e}</option>`).join('');
+
+                // Show Controls
+                endpointSelect.classList.remove('hidden');
+                statusSelect.classList.remove('hidden');
+                searchBox.classList.remove('hidden');
+                downloadBtn.classList.remove('hidden');
+
+                // Initial Render
+                applyFilters();
+            });
+
+            downloadBtn.addEventListener('click', () => {
+                const date = dateSelect.value || 'logs';
+                // Re-construct the raw log text. 
+                // Note: The split() removed the separator, so we must add it back for Network Logs.
+                // System logs have full raw preserved.
+                const fullText = allLogs.map(l => {
+                    if (l.type === 'system') return l.raw;
+                    return '========== Request Log ==========' + l.raw;
+                }).join('\n');
+                downloadTextFile(`logs_v2_${date}.log`, fullText);
+            });
+
+            searchInput.addEventListener('input', applyFilters);
+            endpointSelect.addEventListener('change', applyFilters);
+            statusSelect.addEventListener('change', applyFilters);
+
+        })();
+    </script>
+</body>
+
+</html>
