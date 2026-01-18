@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log Viewer – App Style</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* Reset & Clean Base */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: #f3f4f6;
+      /* slate-100 */
+      color: #1f2937;
+      /* gray-800 */
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Header Bar */
+    .app-header {
+      background: #ffffff;
+      border-bottom: 1px solid #e5e7eb;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      padding: 0 1.5rem;
+      flex-shrink: 0;
+      justify-content: space-between;
+    }
+
+    .brand {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #4f46e5;
+      /* indigo-600 */
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .brand svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    /* Controls Section */
+    .control-bar {
+      background: #ffffff;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    .input-grp {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #f9fafb;
+      padding: 0.25rem 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+    }
+
+    .input-grp:focus-within {
+      border-color: #4f46e5;
+      ring: 2px solid #e0e7ff;
+    }
+
+    input[type="text"] {
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 0.9rem;
+      width: 200px;
+      color: #374151;
+    }
+
+    input[type="file"] {
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+
+    select {
+      padding: 0.4rem 2rem 0.4rem 0.8rem;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      background-color: #f9fafb;
+      font-size: 0.9rem;
+      color: #1f2937;
+      outline: none;
+      min-width: 160px;
+      cursor: pointer;
+    }
+
+    .btn {
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+
+    .btn-primary {
+      background: #4f46e5;
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #4338ca;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #d1d5db;
+      color: #374151;
+    }
+
+    .btn-outline:hover {
+      background: #f3f4f6;
+      border-color: #9ca3af;
+    }
+
+    .separator {
+      width: 1px;
+      height: 24px;
+      background: #e5e7eb;
+      margin: 0 0.5rem;
+    }
+
+    /* Alerts */
+    .alert-banner {
+      background: #fef2f2;
+      color: #991b1b;
+      padding: 0.5rem 1.5rem;
+      font-size: 0.9rem;
+      border-bottom: 1px solid #fee2e2;
+      display: none;
+    }
+
+    .alert-banner.warn {
+      background: #fffbeb;
+      color: #92400e;
+      border-color: #fef3c7;
+    }
+
+    /* Content Area */
+    .main-content {
+      flex: 1;
+      overflow: hidden;
+      /* container doesn't scroll, textarea does */
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .viewer {
+      width: 100%;
+      height: 100%;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      color: #111827;
+      /* gray-900 */
+      resize: none;
+      outline: none;
+    }
+
+    .viewer:focus {
+      border-color: #a5b4fc;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js"></script>
+</head>
+
+<body>
+
+
+
+  <!-- Alert Banner -->
+  <div id="alert" class="alert-banner"></div>
+
+  <!-- Action Bar -->
+  <div class="control-bar">
+    <!-- Load Section -->
+    <div class="input-grp hidden">
+      <input type="text" id="zipUrl" placeholder="https://.../logs.zip">
+    </div>
+    <span style="color:#6b7280; font-size: 0.85rem;">Upload Networklog .zip</span>
+    <input type="file" id="localZip" accept=".zip">
+
+    <!-- Date Select Section (Hidden initially) -->
+    <div id="dateContainer" class="hidden" style="display:flex; align-items:center; gap:1rem; flex: 1;">
+      <div class="separator"></div>
+      <select id="dateSelect"></select>
+      <button id="downloadBtn" class="btn btn-outline hidden" style="margin-left: auto;">Download decrypted Log</button>
+    </div>
+  </div>
+
+  <!-- Main Viewer -->
+  <main class="main-content hidden" id="logsContainer">
+    <textarea id="logOutput" class="viewer" readonly placeholder="Waiting for logs..."></textarea>
+  </main>
+
+  <!-- Empty State Placeholder (Visible when no logs) -->
+  <main class="main-content" id="emptyState" style="align-items: center; justify-content: center; color: #9ca3af;">
+    <div style="text-align:center;">
+      <p>Load a ZIP file to view encrypted logs.</p>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      // Elements
+      const alertBox = document.getElementById('alert');
+      const zipUrlInput = document.getElementById('zipUrl');
+      const localZipInput = document.getElementById('localZip');
+      const dateContainer = document.getElementById('dateContainer');
+      const dateSelect = document.getElementById('dateSelect');
+      const logsContainer = document.getElementById('logsContainer');
+      const logOutput = document.getElementById('logOutput');
+      const downloadBtn = document.getElementById('downloadBtn');
+      const emptyState = document.getElementById('emptyState');
+
+      let zipFilenames = [];
+      let zipBuffer = null;
+      let storedPassword = '';
+      let fileCache = {}; // Cache for decompressed files
+
+      // --- UI Helpers ---
+      const showAlert = (msg, type = 'warn') => {
+        alertBox.textContent = msg;
+        alertBox.className = `alert-banner ${type}`;
+        alertBox.style.display = 'block';
+      };
+      const hideAlert = () => { alertBox.style.display = 'none'; };
+
+      // --- Crypto & File Logic ---
+      const generateKey = pwd => {
+        const hash = CryptoJS.SHA256(pwd);
+        const words = hash.words.slice(0, 4);
+        return CryptoJS.lib.WordArray.create(words, 16);
+      };
+
+      const decryptBase64 = (b64, keys) => {
+        try {
+          const ct = CryptoJS.enc.Base64.parse(b64);
+          for (const k of keys) {
+            try {
+              const dec = CryptoJS.AES.decrypt({ ciphertext: ct }, k, { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7 });
+              const txt = dec.toString(CryptoJS.enc.Utf8);
+              if (txt) return txt;
+            } catch (e) { }
+          }
+        } catch (e) { }
+        return null;
+      };
+
+      const replaceEncrypted = (line, keys) => {
+        const start = line.indexOf('#START#');
+        const end = line.indexOf('#END#', start + 7);
+        if (start === -1 || end === -1) return line;
+        const enc = line.substring(start + 7, end).trim();
+        const dec = decryptBase64(enc, keys);
+        return dec !== null ? line.slice(0, start) + dec + line.slice(end + 5) : line;
+      };
+
+      const derivePasswordFromFilename = name => {
+        const m = name.match(/NetworkLog-(\d+)-(\d+)/);
+        return m ? `${m[1]}.${m[2]}` : '';
+      };
+
+      const fetchArrayBuffer = async url => {
+        const r = await fetch(url, { mode: 'cors' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return await r.arrayBuffer();
+      };
+
+      const unzipArrayBuffer = async ab => {
+        return new Promise((res, rej) => {
+          fflate.unzip(new Uint8Array(ab), { filter: () => true }, (e, d) => e ? rej(e) : res(d));
+        });
+      };
+
+      // --- App Logic ---
+      const buildDateFolders = entries => {
+        const dates = new Set();
+        const re = /^\d{4}-\d{2}-\d{2}$/;
+        Object.keys(entries).forEach(p => {
+          const parts = p.replace(/\\\\/g, '/').split('/').filter(Boolean);
+          if (re.test(parts[0])) dates.add(parts[0]);
+          else if (parts[1] && re.test(parts[1])) dates.add(parts[1]);
+        });
+        return Array.from(dates).sort();
+      };
+
+      const getFilesForDate = (filenames, date) => {
+        const re = new RegExp('(?:^|.*/)' + date.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&') + '/network_logs_.*\\.log$');
+        return filenames.filter(n => re.test(n.replace(/\\\\/g, '/')));
+      };
+
+      const uint8ToUtf8 = u8 => new TextDecoder('utf-8', { fatal: false }).decode(u8);
+
+      const downloadTextFile = (filename, text) => {
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+        URL.revokeObjectURL(url); a.remove();
+      };
+
+      const processZip = async (ab, filename) => {
+        zipBuffer = new Uint8Array(ab);
+        zipFilenames = [];
+        fileCache = {}; // Clear cache on new load
+
+        // Pass 1: Scan filenames ONLY
+        await new Promise((res, rej) => {
+          fflate.unzip(zipBuffer, {
+            filter: (file) => {
+              zipFilenames.push(file.name);
+              return false; // Do not decompress
+            }
+          }, (e) => e ? rej(e) : res());
+        });
+
+        storedPassword = derivePasswordFromFilename(filename);
+        const dates = buildDateFolders({
+          // Mock object for buildDateFolders which expects keys
+          [Symbol.iterator]: function* () { yield* zipFilenames; }
+        });
+        // actually buildDateFolders iterates Object.keys if passed strict object, let's just pass array and fix buildDateFolders
+
+        // Wait, buildDateFolders defined above expects `entries` object and does Object.keys(entries).
+        // I should update buildDateFolders to accept array OR update the call.
+        // Let's update buildDateFolders in a separate chunk or just pass an object-like wrapper?
+        // Easier to just update buildDateFolders to handle array since I am editing it anyway? 
+        // No, I'll fix the call here to be compatible or update the helper.
+        // Let's update the helper in a separate chunk to be safe.
+        // Wait, I can't request multiple chunks for the same tool if they overlap? No they don't overlap.
+        // I will update processZip to call a modified buildDateFolders logic or simply reuse the array logic.
+
+        // Let's update buildDateFolders to work with Array in the other chunk.
+
+        if (zipFilenames.length === 0) {
+          showAlert('⚠️ No files found in the ZIP.', 'warn');
+          return;
+        }
+
+        // Re-implement buildDateFolders logic here or call modified one.
+        // I will modify buildDateFolders in another chunk.
+        // Assuming buildDateFolders is modified to accept array:
+        const uniqueDates = new Set();
+        const dateRe = /^\d{4}-\d{2}-\d{2}$/;
+        zipFilenames.forEach(p => {
+          const parts = p.replace(/\\\\/g, '/').split('/').filter(Boolean);
+          if (dateRe.test(parts[0])) uniqueDates.add(parts[0]);
+          else if (parts[1] && dateRe.test(parts[1])) uniqueDates.add(parts[1]);
+        });
+        const datesList = Array.from(uniqueDates).sort();
+
+        if (datesList.length === 0) {
+          showAlert('⚠️ No date folders found in the ZIP.', 'warn');
+          return;
+        }
+        dateSelect.innerHTML = '<option value="">-- Choose Date --</option>' + datesList.map(d => `<option value="${d}">${d}</option>`).join('');
+        dateContainer.classList.remove('hidden');
+        hideAlert();
+      };
+
+      const handleSourceLoad = async () => {
+        hideAlert();
+        dateContainer.classList.add('hidden');
+        logsContainer.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        logsContainer.style.display = 'none';
+
+        const url = zipUrlInput.value.trim();
+        const file = localZipInput.files?.[0];
+
+        if (!url && !file) {
+          // If called without input, just return (or we could show specific error)
+          return;
+        }
+
+        try {
+          if (url) {
+            const ab = await fetchArrayBuffer(url);
+            await processZip(ab, url.split('/').pop() || '');
+          } else if (file) {
+            const ab = await file.arrayBuffer();
+            await processZip(ab, file.name || '');
+          }
+        } catch (e) {
+          showAlert('❌ Failed: ' + (e.message || ''), 'error');
+        }
+      };
+
+      // Trigger load on file selection
+      localZipInput.addEventListener('change', handleSourceLoad);
+
+      // Trigger load on URL enter key
+      zipUrlInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleSourceLoad();
+      });
+
+      dateSelect.addEventListener('change', async () => {
+        const sel = dateSelect.value;
+        if (!sel) {
+          logsContainer.classList.add('hidden');
+          emptyState.classList.remove('hidden');
+          downloadBtn.classList.add('hidden');
+          return;
+        }
+
+        // Show Logs UI (Loading state)
+        emptyState.classList.add('hidden');
+        logsContainer.classList.remove('hidden');
+        logsContainer.style.display = 'flex';
+        logOutput.value = 'Decrypting and loading logs...';
+
+        // Use timeout to allow UI to update
+        setTimeout(async () => {
+          const files = getFilesForDate(zipFilenames, sel);
+          const filesSet = new Set(files);
+
+          // 1. Decompress (if not in cache)
+          // We need to unzip files that are NOT in cache
+          const filesToUnzip = files.filter(f => !fileCache[f]);
+
+          if (filesToUnzip.length > 0) {
+            await new Promise((resolve, reject) => {
+              const unzipFilesSet = new Set(filesToUnzip);
+              fflate.unzip(zipBuffer, {
+                filter: (file) => unzipFilesSet.has(file.name)
+              }, (err, unzippedData) => {
+                if (err) return reject(err);
+                // Merge into cache
+                Object.assign(fileCache, unzippedData);
+                resolve();
+              });
+            });
+          }
+
+          // 2. Merge & Decrypt
+          let merged = '';
+          files.forEach(n => {
+            if (fileCache[n]) merged += uint8ToUtf8(fileCache[n]);
+          });
+
+          const keys = [];
+          if (storedPassword) keys.push(generateKey(storedPassword));
+          keys.push(generateKey('NUTAPOSJOGJA'));
+
+          // Optimize decryption: split by line might be slow for huge string, but for Textarea it's okay-ish
+          // For better performance on huge text, replaceEncrypted can be run essentially on the whole block if logic supports it, 
+          // but current logic splits by line. We'll keep it simple but working.
+          const lines = merged.split(/\n/).map(l => replaceEncrypted(l, keys)).join('\n');
+
+          logOutput.value = lines;
+          downloadBtn.classList.remove('hidden');
+        }, 50);
+      });
+
+      downloadBtn.addEventListener('click', () => {
+        const date = dateSelect.value || 'logs';
+        downloadTextFile(`logs_${date}.log`, logOutput.value || '');
+      });
+    })();
+  </script>
+</body>
+
+</html>

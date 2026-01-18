@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text Decryptor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* Reset & Base */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: #f3f4f6;
+      /* Slate-100 */
+      color: #1f2937;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .brand {
+      font-weight: 600;
+      font-size: 1.5rem;
+      color: #4f46e5;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .brand svg {
+      width: 28px;
+      height: 28px;
+      fill: currentColor;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      font-size: 0.95rem;
+      margin-top: 0.25rem;
+    }
+
+    /* Cards */
+    .card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      /* subtle shadow */
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 0.75rem 1.25rem;
+      border-bottom: 1px solid #f3f4f6;
+      background: #f9fafb;
+      font-weight: 600;
+      color: #374151;
+      font-size: 0.9rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .editor {
+      min-height: 200px;
+      max-height: 500px;
+      resize: vertical;
+      padding: 1rem;
+      border: none;
+      outline: none;
+      font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+      font-size: 0.9rem;
+      color: #1f2937;
+      line-height: 1.6;
+      display: block;
+      width: 100%;
+      overflow-wrap: break-word;
+      overflow-y: auto;
+      /* enable vertical scrolling */
+    }
+
+    .editor:focus {
+      background-color: #fefeff;
+    }
+
+    /* Center Action */
+    .action-row {
+      display: flex;
+      justify-content: center;
+      position: relative;
+    }
+
+    .action-row::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: #e5e7eb;
+      z-index: 0;
+    }
+
+    .btn-decrypt {
+      position: relative;
+      z-index: 10;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      padding: 0.75rem 2.5rem;
+      border-radius: 9999px;
+      /* Pill shape */
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 1rem;
+      box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+      transition: all 0.2s;
+    }
+
+    .btn-decrypt:hover {
+      background: #4338ca;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 10px -1px rgba(79, 70, 229, 0.4);
+    }
+
+    .btn-decrypt:active {
+      transform: translateY(0);
+    }
+
+    /* Utility */
+    .btn-text {
+      font-size: 0.85rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .text-red {
+      color: #ef4444;
+    }
+
+    .text-indigo {
+      color: #4f46e5;
+    }
+
+    .text-red:hover {
+      text-decoration: underline;
+    }
+
+    .text-indigo:hover {
+      text-decoration: underline;
+    }
+
+    .output-area {
+      background-color: #f8fafc;
+      /* slightly darker background for output */
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js"></script>
+</head>
+
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="brand">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3 3.1-3s3.1 1.29 3.1 3v2z" />
+        </svg>
+        <span>Text Decryptor</span>
+      </div>
+      <div class="subtitle">Securely decrypt your log snippets</div>
+    </div>
+
+    <!-- Input Card -->
+    <div class="card">
+      <div class="card-header">
+        <span>Encrypted Input</span>
+        <button id="clearBtn" class="btn-text text-red">Clear</button>
+      </div>
+      <textarea id="encryptedInput" class="editor"
+        placeholder="Paste encrypted text here including #START# markers..."></textarea>
+    </div>
+
+    <!-- Action Button (Centered) -->
+    <div class="action-row">
+      <button id="decryptBtn" class="btn-decrypt">Decrypt Text</button>
+    </div>
+
+    <!-- Output Card -->
+    <div class="card">
+      <div class="card-header">
+        <span>Decrypted Result</span>
+        <button id="copyBtn" class="btn-text text-indigo">Copy Result</button>
+      </div>
+      <div id="output" class="editor output-area" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const input = document.getElementById('encryptedInput');
+      const btn = document.getElementById('decryptBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const copyBtn = document.getElementById('copyBtn');
+      const output = document.getElementById('output');
+
+      const DEFAULT_KEY = 'NUTAPOSJOGJA';
+
+      const generateKey = pwd => {
+        const hash = CryptoJS.SHA256(pwd);
+        const words = hash.words.slice(0, 4);
+        return CryptoJS.lib.WordArray.create(words, 16);
+      };
+
+      const decryptBase64 = (encoded, keys) => {
+        try {
+          const ciphertext = CryptoJS.enc.Base64.parse(encoded.trim());
+          for (const key of keys) {
+            try {
+              const decrypted = CryptoJS.AES.decrypt({ ciphertext }, key, { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7 });
+              const text = decrypted.toString(CryptoJS.enc.Utf8);
+              if (text) return text;
+            } catch (e) { }
+          }
+        } catch (e) { }
+        return null;
+      };
+
+      const decryptTextBlock = block => {
+        const keys = [generateKey(DEFAULT_KEY)];
+        const markerPattern = /#START#([\s\S]*?)#END#/g;
+        let match;
+        let lastIndex = 0;
+        let result = '';
+        let replacedAny = false;
+
+        while ((match = markerPattern.exec(block)) !== null) {
+          result += block.slice(lastIndex, match.index);
+          const decoded = decryptBase64(match[1], keys);
+          if (decoded !== null) {
+            result += decoded;
+            replacedAny = true;
+          } else {
+            result += match[0];
+          }
+          lastIndex = match.index + match[0].length;
+        }
+        result += block.slice(lastIndex);
+        return { text: result, success: replacedAny };
+      };
+
+      const handleDecrypt = () => {
+        const raw = input.value;
+        if (!raw.trim()) {
+          output.textContent = '';
+          return;
+        }
+        const { text, success } = decryptTextBlock(raw);
+        if (!success && raw.includes('#START#')) {
+          output.innerText = text + '\n\n[Warning: Markers found but decryption failed.]';
+          output.style.color = '#ef4444';
+        } else {
+          output.innerText = text;
+          output.style.color = '#1f2937';
+        }
+      };
+
+      btn.addEventListener('click', handleDecrypt);
+
+      clearBtn.addEventListener('click', () => {
+        input.value = '';
+        output.textContent = '';
+      });
+
+      copyBtn.addEventListener('click', () => {
+        if (!output.textContent) return;
+        navigator.clipboard.writeText(output.textContent).then(() => {
+          const original = copyBtn.textContent;
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => copyBtn.textContent = original, 1500);
+        });
+      });
+    })();
+  </script>
+</body>
+
+</html>
