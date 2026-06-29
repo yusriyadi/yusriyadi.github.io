@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mermaid Viewer</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f5f5f5;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  flex-wrap: wrap;
+}
+.toolbar h1 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-right: 16px;
+  color: #333;
+}
+.btn {
+  padding: 6px 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  transition: .15s;
+}
+.btn:hover { background: #e8e8e8; }
+.btn-primary {
+  background: #1a73e8;
+  color: #fff;
+  border-color: #1a73e8;
+}
+.btn-primary:hover { background: #1557b0; }
+.btn-success {
+  background: #188038;
+  color: #fff;
+  border-color: #188038;
+}
+.btn-success:hover { background: #125c2a; }
+.btn-danger {
+  background: #d93025;
+  color: #fff;
+  border-color: #d93025;
+}
+.btn-danger:hover { background: #a6332c; }
+.split {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.panel + .panel { border-left: 1px solid #ddd; }
+.panel-header {
+  padding: 6px 12px;
+  background: #eaeaea;
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+#code {
+  flex: 1;
+  border: none;
+  outline: none;
+  resize: none;
+  padding: 12px;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  background: #fafafa;
+  tab-size: 2;
+}
+#preview {
+  flex: 1;
+  padding: 24px;
+  overflow: auto;
+  background: #fff;
+  display: flex;
+  justify-content: center;
+}
+#preview svg { max-width: 100%; }
+.error-bar {
+  display: none;
+  padding: 8px 12px;
+  background: #fce8e6;
+  color: #c5221f;
+  font-size: 13px;
+  border-top: 1px solid #f5c6c2;
+  white-space: pre-wrap;
+  font-family: monospace;
+}
+.status {
+  margin-left: auto;
+  font-size: 12px;
+  color: #666;
+}
+label { font-size: 13px; color: #555; }
+select, input[type="text"] {
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+}
+@media (max-width: 768px) {
+  .split { flex-direction: column; }
+  .panel + .panel { border-left: none; border-top: 1px solid #ddd; }
+}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <h1>🧩 Mermaid Viewer</h1>
+  <button class="btn btn-primary" onclick="render()">▶ Render</button>
+  <button class="btn" onclick="autoRender()">🔄 Auto</button>
+  <button class="btn btn-success" onclick="downloadSVG()">⬇ SVG</button>
+  <button class="btn btn-success" onclick="downloadPNG()">⬇ PNG</button>
+  <button class="btn btn-danger" onclick="clearCode()">✕ Clear</button>
+  <label>Theme:
+    <select id="theme" onchange="render()">
+      <option value="default">Default</option>
+      <option value="neutral">Neutral</option>
+      <option value="dark">Dark</option>
+      <option value="forest">Forest</option>
+      <option value="base">Base</option>
+    </select>
+  </label>
+  <span class="status" id="status">Ready</span>
+</div>
+
+<div class="split">
+  <div class="panel">
+    <div class="panel-header">Mermaid Code</div>
+    <textarea id="code" spellcheck="false" placeholder="Paste your Mermaid code here..."></textarea>
+  </div>
+  <div class="panel">
+    <div class="panel-header">Preview</div>
+    <div id="preview"></div>
+    <div class="error-bar" id="errorBar"></div>
+  </div>
+</div>
+
+<script>
+let autoTimer = null;
+let renderCount = 0;
+
+const DEFAULT_CODE = `erDiagram
+    access_modules ||--o{ access_permission_groups : "module_id"
+    access_permission_groups ||--o{ access_permissions : "group_id"
+    access_permissions ||--o| access_permissions : "parent_id"
+
+    access_right_roles ||--o{ access_right_role_modules : "(id, DeviceNo)"
+    access_right_roles ||--o{ access_right_role_permissions : "(id, DeviceNo)"
+    access_modules ||--o{ access_right_role_modules : "module_id"
+    access_permissions ||--o{ access_right_role_permissions : "permission_id"
+
+    access_modules {
+        int id PK
+        text name
+        text scope
+    }
+    access_permission_groups {
+        int id PK
+        int module_id FK
+        text name
+    }
+    access_permissions {
+        int id PK
+        int group_id FK
+        int parent_id FK
+        text name
+    }
+    access_right_roles {
+        int id PK
+        int DeviceNo PK
+        text name
+    }
+    access_right_role_modules {
+        int role_id PK,FK
+        int role_id_device_no PK,FK
+        int module_id PK,FK
+    }
+    access_right_role_permissions {
+        int role_id PK,FK
+        int role_id_device_no PK,FK
+        int permission_id PK,FK
+    }`;
+
+const store = {
+  get() {
+    try { return localStorage.getItem('mermaidCode'); } catch { return null; }
+  },
+  set(code) {
+    try { localStorage.setItem('mermaidCode', code); } catch {}
+  }
+};
+
+const codeEl = document.getElementById('code');
+const previewEl = document.getElementById('preview');
+const errorEl = document.getElementById('errorBar');
+const statusEl = document.getElementById('status');
+
+// Load saved or default
+codeEl.value = store.get() || DEFAULT_CODE;
+
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'default',
+  securityLevel: 'loose',
+  er: { useMaxWidth: true, layoutDirection: 'TB' }
+});
+
+async function render() {
+  const code = codeEl.value.trim();
+  if (!code) { previewEl.innerHTML = '<p style="color:#999;margin-top:40px">Paste Mermaid code to render</p>'; errorEl.style.display = 'none'; return; }
+
+  renderCount++;
+  const thisRender = renderCount;
+  statusEl.textContent = '⏳ Rendering...';
+
+  previewEl.innerHTML = '';
+  errorEl.style.display = 'none';
+
+  const firstLine = code.split('\n').find(l => l.trim() && !l.trim().startsWith('%'));
+  const diagramType = firstLine ? firstLine.trim().split(/\s/)[0] : 'unknown';
+
+  try {
+    const { svg } = await mermaid.render('mermaid-svg-' + Date.now(), code);
+    if (thisRender !== renderCount) return;
+    previewEl.innerHTML = svg;
+    statusEl.textContent = '✅ Rendered';
+    store.set(code);
+  } catch (e) {
+    if (thisRender !== renderCount) return;
+    errorEl.textContent = `❌ ${diagramType} render error:\n${e.message || e}`;
+    errorEl.style.display = 'block';
+    statusEl.textContent = '❌ Error';
+  }
+}
+
+function autoRender() {
+  if (autoTimer) {
+    clearInterval(autoTimer);
+    autoTimer = null;
+    statusEl.textContent = '⏹ Auto off';
+    return;
+  }
+  render();
+  autoTimer = setInterval(render, 2000);
+  statusEl.textContent = '🔄 Auto every 2s';
+}
+
+function clearCode() {
+  codeEl.value = '';
+  render();
+}
+
+function getSVGElement() {
+  return previewEl.querySelector('svg');
+}
+
+function downloadSVG() {
+  const svg = getSVGElement();
+  if (!svg) { statusEl.textContent = '⚠ No diagram to download'; return; }
+  const blob = new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + svg.outerHTML], { type: 'image/svg+xml' });
+  downloadBlob(blob, 'diagram.svg');
+  statusEl.textContent = '⬇ SVG downloaded';
+}
+
+function downloadPNG() {
+  const svg = getSVGElement();
+  if (!svg) { statusEl.textContent = '⚠ No diagram to download'; return; }
+  const svgData = new XMLSerializer().serializeToString(svg);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  const img = new Image();
+  const rect = svg.getBoundingClientRect();
+  canvas.width = rect.width * 2;
+  canvas.height = rect.height * 2;
+  img.onload = () => {
+    ctx.scale(2, 2);
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0);
+    canvas.toBlob(b => { downloadBlob(b, 'diagram.png'); statusEl.textContent = '⬇ PNG downloaded'; });
+  };
+  img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+}
+
+function downloadBlob(blob, filename) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+document.getElementById('theme').addEventListener('change', function() {
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: this.value,
+    securityLevel: 'loose',
+    er: { useMaxWidth: true, layoutDirection: 'TB' }
+  });
+  render();
+});
+
+let debounceTimer;
+codeEl.addEventListener('input', () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(render, 600);
+});
+
+codeEl.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    render();
+  }
+});
+
+render();
+</script>
+</body>
+</html>
