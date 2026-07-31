@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nested JSON Pretty Printer</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --border: #334155;
+      --accent: #38bdf8;
+      --danger: #f87171;
+      --success: #4ade80;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .container {
+      width: min(1400px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(24px, 4vw, 38px);
+    }
+
+    .subtitle {
+      margin: 0 0 24px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    button,
+    .file-label {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font: inherit;
+      cursor: pointer;
+      transition: transform .15s ease, border-color .15s ease, opacity .15s ease;
+    }
+
+    button:hover,
+    .file-label:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: #082f49;
+      border-color: var(--accent);
+      font-weight: 700;
+    }
+
+    button.danger {
+      color: var(--danger);
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,.02);
+    }
+
+    .panel-header strong {
+      font-size: 14px;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    textarea,
+    pre {
+      width: 100%;
+      min-height: 64vh;
+      margin: 0;
+      padding: 16px;
+      border: 0;
+      outline: 0;
+      resize: vertical;
+      background: transparent;
+      color: var(--text);
+      font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      tab-size: 2;
+      overflow: auto;
+    }
+
+    pre {
+      white-space: pre;
+    }
+
+    .status {
+      min-height: 24px;
+      margin: 14px 2px 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .status.success { color: var(--success); }
+    .status.error { color: var(--danger); }
+
+    .drop-active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, .15);
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      textarea,
+      pre {
+        min-height: 42vh;
+      }
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f8fafc;
+        --panel: #ffffff;
+        --panel-2: #f1f5f9;
+        --text: #0f172a;
+        --muted: #64748b;
+        --border: #cbd5e1;
+        --accent: #0284c7;
+        --danger: #dc2626;
+        --success: #15803d;
+      }
+
+      button.primary {
+        color: #ffffff;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>Nested JSON Pretty Printer</h1>
+    <p class="subtitle">
+      Tempel JSON atau pilih file <code>.json</code>/<code>.txt</code>.
+      String yang berisi object atau array JSON akan otomatis di-decode secara rekursif.
+    </p>
+
+    <div class="toolbar">
+      <label class="file-label" for="fileInput">Pilih file</label>
+      <input id="fileInput" type="file" accept=".json,.txt,application/json,text/plain" />
+
+      <button id="formatBtn" class="primary" type="button">Format JSON</button>
+      <button id="copyBtn" type="button">Copy hasil</button>
+      <button id="downloadBtn" type="button">Download hasil</button>
+      <button id="sampleBtn" type="button">Muat contoh</button>
+      <button id="clearBtn" class="danger" type="button">Bersihkan</button>
+    </div>
+
+    <section class="grid">
+      <article id="inputPanel" class="panel">
+        <div class="panel-header">
+          <strong>Input</strong>
+          <span id="inputMeta" class="meta">0 karakter</span>
+        </div>
+        <textarea
+          id="input"
+          spellcheck="false"
+          placeholder='Contoh: {"metadata":"{\"ClearedSale\":\"{\\\"Total\\\":1000}\"}"}'
+        ></textarea>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <strong>Output</strong>
+          <span id="outputMeta" class="meta">Belum diproses</span>
+        </div>
+        <pre id="output" aria-live="polite"></pre>
+      </article>
+    </section>
+
+    <div id="status" class="status">Siap digunakan.</div>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const input = document.getElementById("input");
+      const output = document.getElementById("output");
+      const fileInput = document.getElementById("fileInput");
+      const inputPanel = document.getElementById("inputPanel");
+      const inputMeta = document.getElementById("inputMeta");
+      const outputMeta = document.getElementById("outputMeta");
+      const status = document.getElementById("status");
+
+      let currentFileName = "pretty-json.json";
+
+      function setStatus(message, type = "") {
+        status.textContent = message;
+        status.className = `status ${type}`.trim();
+      }
+
+      function updateInputMeta() {
+        inputMeta.textContent = `${input.value.length.toLocaleString("id-ID")} karakter`;
+      }
+
+      function looksLikeJson(value) {
+        const trimmed = value.trim();
+        return (
+          (trimmed.startsWith("{") && trimmed.endsWith("}")) ||
+          (trimmed.startsWith("[") && trimmed.endsWith("]"))
+        );
+      }
+
+      function decodeNestedJson(value) {
+        if (Array.isArray(value)) {
+          return value.map(decodeNestedJson);
+        }
+
+        if (value !== null && typeof value === "object") {
+          const result = {};
+          for (const [key, nestedValue] of Object.entries(value)) {
+            result[key] = decodeNestedJson(nestedValue);
+          }
+          return result;
+        }
+
+        if (typeof value === "string" && looksLikeJson(value)) {
+          try {
+            return decodeNestedJson(JSON.parse(value));
+          } catch {
+            return value;
+          }
+        }
+
+        return value;
+      }
+
+      function formatJson() {
+        const raw = input.value.trim();
+
+        if (!raw) {
+          output.textContent = "";
+          outputMeta.textContent = "Belum diproses";
+          setStatus("Input masih kosong.", "error");
+          return;
+        }
+
+        try {
+          const parsed = JSON.parse(raw);
+          const decoded = decodeNestedJson(parsed);
+          const formatted = JSON.stringify(decoded, null, 2);
+
+          output.textContent = formatted;
+          outputMeta.textContent =
+            `${formatted.split("\n").length.toLocaleString("id-ID")} baris`;
+          setStatus("JSON berhasil diformat dan nested JSON berhasil di-decode.", "success");
+        } catch (error) {
+          output.textContent = "";
+          outputMeta.textContent = "Gagal diproses";
+          setStatus(`JSON tidak valid: ${error.message}`, "error");
+        }
+      }
+
+      async function copyOutput() {
+        if (!output.textContent) {
+          setStatus("Belum ada hasil untuk disalin.", "error");
+          return;
+        }
+
+        try {
+          await navigator.clipboard.writeText(output.textContent);
+          setStatus("Hasil berhasil disalin ke clipboard.", "success");
+        } catch {
+          const range = document.createRange();
+          range.selectNodeContents(output);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+          document.execCommand("copy");
+          selection.removeAllRanges();
+          setStatus("Hasil berhasil disalin ke clipboard.", "success");
+        }
+      }
+
+      function downloadOutput() {
+        if (!output.textContent) {
+          setStatus("Belum ada hasil untuk di-download.", "error");
+          return;
+        }
+
+        const blob = new Blob([output.textContent + "\n"], {
+          type: "application/json;charset=utf-8"
+        });
+
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = currentFileName;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        URL.revokeObjectURL(url);
+
+        setStatus(`File ${currentFileName} berhasil dibuat.`, "success");
+      }
+
+      function loadFile(file) {
+        if (!file) return;
+
+        const reader = new FileReader();
+
+        reader.onload = () => {
+          input.value = String(reader.result ?? "");
+          const baseName = file.name.replace(/\.[^.]+$/, "") || "pretty-json";
+          currentFileName = `${baseName}_pretty.json`;
+          updateInputMeta();
+          formatJson();
+        };
+
+        reader.onerror = () => {
+          setStatus("File gagal dibaca.", "error");
+        };
+
+        reader.readAsText(file, "utf-8");
+      }
+
+      function loadSample() {
+        const sample = {
+          actionType: "CLEAR_SALE_SESSION",
+          metadata: JSON.stringify({
+            saleLocalUuid: "5e707480-63a7-47e6-9601-441a166f50ab",
+            grandTotal: 208900,
+            ClearedSale: JSON.stringify({
+              data: {
+                AutoClearing: "true",
+                Total: "208900.0",
+                Extra: {
+                  device_type: "Tablet"
+                },
+                Details_Item: [
+                  {
+                    ItemName: "Ayam Kremes",
+                    Quantity: "1.0",
+                    SubTotal: "12000.0"
+                  }
+                ]
+              }
+            })
+          })
+        };
+
+        input.value = JSON.stringify(sample);
+        currentFileName = "sample_pretty.json";
+        updateInputMeta();
+        formatJson();
+      }
+
+      function clearAll() {
+        input.value = "";
+        output.textContent = "";
+        fileInput.value = "";
+        currentFileName = "pretty-json.json";
+        outputMeta.textContent = "Belum diproses";
+        updateInputMeta();
+        setStatus("Input dan output sudah dibersihkan.");
+        input.focus();
+      }
+
+      document.getElementById("formatBtn").addEventListener("click", formatJson);
+      document.getElementById("copyBtn").addEventListener("click", copyOutput);
+      document.getElementById("downloadBtn").addEventListener("click", downloadOutput);
+      document.getElementById("sampleBtn").addEventListener("click", loadSample);
+      document.getElementById("clearBtn").addEventListener("click", clearAll);
+
+      input.addEventListener("input", updateInputMeta);
+      input.addEventListener("keydown", event => {
+        if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+          event.preventDefault();
+          formatJson();
+        }
+      });
+
+      fileInput.addEventListener("change", event => {
+        loadFile(event.target.files?.[0]);
+      });
+
+      ["dragenter", "dragover"].forEach(eventName => {
+        inputPanel.addEventListener(eventName, event => {
+          event.preventDefault();
+          inputPanel.classList.add("drop-active");
+        });
+      });
+
+      ["dragleave", "drop"].forEach(eventName => {
+        inputPanel.addEventListener(eventName, event => {
+          event.preventDefault();
+          inputPanel.classList.remove("drop-active");
+        });
+      });
+
+      inputPanel.addEventListener("drop", event => {
+        loadFile(event.dataTransfer?.files?.[0]);
+      });
+
+      updateInputMeta();
+    })();
+  </script>
+</body>
+</html>
