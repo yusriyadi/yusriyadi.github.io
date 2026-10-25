@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 1,
   "apps": [
     {
       "id": "localguard",
@@ -48,11 +48,11 @@
       "repositoryUrl": "https://github.com/yusriyadi/tellauncher",
       "releases": [
         {
-          "tag": "first-release",
+          "tag": "v0.2.0",
           "versionName": "0.2.0",
-          "versionCode": "2",
-          "releasedAt": "25-10-2026",
-          "minSdk": "26",
+          "versionCode": 2,
+          "releasedAt": "2026-10-25",
+          "minSdk": 26,
           "changelog": [],
           "apkUrl": "https://github.com/yusriyadi/tellauncher/releases/download/v0.2.0/Tellauncher-0.2.0.apk"
         }
