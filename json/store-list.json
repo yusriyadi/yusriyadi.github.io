@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "apps": [
+    {
+      "id": "localguard",
+      "name": "LocalGuard",
+      "packageName": null,
+      "description": null,
+      "iconUrl": null,
+      "repositoryUrl": "https://github.com/yusriyadi/localguard",
+      "releases": [
+        {
+          "tag": "first-release",
+          "versionName": "0.2.0",
+          "versionCode": null,
+          "releasedAt": null,
+          "minSdk": null,
+          "changelog": [],
+          "apkUrl": "https://github.com/yusriyadi/localguard/releases/download/first-release/LocalGuard-0.2.0-release.apk"
+        }
+      ]
+    },
+    {
+      "id": "appfin",
+      "name": "AppFin",
+      "packageName": null,
+      "description": null,
+      "iconUrl": null,
+      "repositoryUrl": "https://github.com/yusriyadi/appfin",
+      "releases": [
+        {
+          "tag": "first-release",
+          "versionName": null,
+          "versionCode": null,
+          "releasedAt": null,
+          "minSdk": null,
+          "changelog": [],
+          "apkUrl": "https://github.com/yusriyadi/appfin/releases/download/first-release/app-release.apk"
+        }
+      ]
+    },
+    {
+      "id": "tellauncher",
+      "name": "TelLauncher",
+      "packageName": null,
+      "description": null,
+      "iconUrl": null,
+      "repositoryUrl": "https://github.com/yusriyadi/tellauncher",
+      "releases": [
+        {
+          "tag": "first-release",
+          "versionName": null,
+          "versionCode": null,
+          "releasedAt": null,
+          "minSdk": null,
+          "changelog": [],
+          "apkUrl": "https://github.com/yusriyadi/tellauncher/releases/download/first-release/app-release.apk"
+        }
+      ]
+    }
+  ]
+}
