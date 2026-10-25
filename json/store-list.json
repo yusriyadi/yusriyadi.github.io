@@ -48,13 +48,13 @@
       "repositoryUrl": "https://github.com/yusriyadi/tellauncher",
       "releases": [
         {
-          "tag": "v0.2.1",
-          "versionName": "0.2.1",
-          "versionCode": 3,
+          "tag": "v0.3.0",
+          "versionName": "0.3.0",
+          "versionCode": 4,
           "releasedAt": "2026-10-25",
           "minSdk": 26,
           "changelog": [],
-          "apkUrl": "https://github.com/yusriyadi/tellauncher/releases/download/v0.2.1/Tellauncher-0.2.1.apk"
+          "apkUrl": "https://github.com/yusriyadi/tellauncher/releases/download/v0.3.0/Tellauncher-0.3.0.apk"
         }
       ]
     }
