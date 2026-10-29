@@ -73,6 +73,31 @@
           "apkUrl": "https://github.com/yusriyadi/tellauncher/releases/download/v0.4.1/Tellauncher-0.4.1.apk"
         }
       ]
+    },
+    {
+      "id": "tellapps-shelf",
+      "name": "TellApps Shelf",
+      "packageName": "com.tellolabs.appshelf",
+      "description": "Browse Android apps, read release notes, download APKs, and open the Android installer. Includes offline catalog access, download management, and light or dark themes.",
+      "iconUrl": null,
+      "repositoryUrl": "https://github.com/yusriyadi/tellapps-shelf",
+      "releases": [
+        {
+          "tag": "v0.1.0",
+          "versionName": "0.1.0",
+          "versionCode": 1,
+          "releasedAt": "2026-10-25",
+          "minSdk": 26,
+          "changelog": [
+            "Browse and search the app catalog, view app details, and read release history.",
+            "Access the last synced catalog offline and refresh it manually.",
+            "Download APKs with progress, cancellation, retry, and download management.",
+            "Open the Android installer for downloaded APKs.",
+            "Choose system, light, or dark themes."
+          ],
+          "apkUrl": "https://github.com/yusriyadi/tellapps-shelf/releases/download/v0.1.0/TellApps-Shelf-0.1.0.apk"
+        }
+      ]
     }
   ]
 }
