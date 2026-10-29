@@ -41,12 +41,28 @@
     },
     {
       "id": "tellauncher",
-      "name": "TelLauncher",
+      "name": "Tellauncher",
       "packageName": "id.tellolabs.launcher",
-      "description": "A quieter drawer with custom shelves and faster access from Home.",
+      "description": "A minimalist Android launcher with a quiet Home screen, searchable apps, custom shelves, and local settings backup. No accounts, ads, or internet required.",
       "iconUrl": null,
       "repositoryUrl": "https://github.com/yusriyadi/tellauncher",
       "releases": [
+        {
+          "tag": "v0.5.0",
+          "versionName": "0.5.0",
+          "versionCode": 7,
+          "releasedAt": "2026-10-29",
+          "minSdk": 26,
+          "changelog": [
+            "Export and import settings, shelves, hidden apps, and protected app selections as JSON. App authentication must be re-enabled after import.",
+            "Drag to reorder custom shelves and optionally swipe between shelves in the drawer.",
+            "Tap a shelf to select it or use the pencil icon to edit.",
+            "More room for search results in the shelf editor, with Save and Delete icons in the top bar.",
+            "Show launcher Settings only in All apps, while keeping it searchable even when hidden.",
+            "Change the default launcher even when Tellauncher is already the default."
+          ],
+          "apkUrl": "https://github.com/yusriyadi/tellauncher/releases/download/v0.5.0/Tellauncher-0.5.0.apk"
+        },
         {
           "tag": "v0.4.1",
           "versionName": "0.4.1",
