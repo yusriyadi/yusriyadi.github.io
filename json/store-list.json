@@ -48,6 +48,20 @@
       "repositoryUrl": "https://github.com/yusriyadi/tellauncher",
       "releases": [
         {
+          "tag": "v0.5.1",
+          "versionName": "0.5.1",
+          "versionCode": 8,
+          "releasedAt": "2026-10-29",
+          "minSdk": 26,
+          "changelog": [
+            "Improve internal organization by separating launcher screens, settings management, and app discovery.",
+            "Store screen navigation state using stable identifiers to prevent dependence on class or package names.",
+            "Safely reset incompatible temporary screen state after updating from older builds. Saved preferences, shelves, hidden apps, and protected app selections remain intact.",
+            "Add regression tests for app ordering, duplicate launcher entries, refresh cancellation, and saved-state handling."
+          ],
+          "apkUrl": "https://github.com/yusriyadi/tellauncher/releases/download/v0.5.1/Tellauncher-0.5.1.apk"
+        },
+        {
           "tag": "v0.5.0",
           "versionName": "0.5.0",
           "versionCode": 7,
