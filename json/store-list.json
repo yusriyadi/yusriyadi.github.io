@@ -4,17 +4,17 @@
     {
       "id": "localguard",
       "name": "LocalGuard",
-      "packageName": null,
-      "description": null,
+      "packageName": "com.tellolabs.localguard",
+      "description": "A root-free Android firewall that controls internet access per app using an on-device VPN, with locally saved rules and no remote VPN server.",
       "iconUrl": null,
       "repositoryUrl": "https://github.com/yusriyadi/localguard",
       "releases": [
         {
-          "tag": "first-release",
+          "tag": "v0.2.0",
           "versionName": "0.2.0",
-          "versionCode": null,
-          "releasedAt": null,
-          "minSdk": null,
+          "versionCode": 1,
+          "releasedAt": "2026-10-25",
+          "minSdk": 26,
           "changelog": [],
           "apkUrl": "https://github.com/yusriyadi/localguard/releases/download/first-release/LocalGuard-0.2.0-release.apk"
         }
@@ -23,17 +23,17 @@
     {
       "id": "appfin",
       "name": "AppFin",
-      "packageName": null,
-      "description": null,
+      "packageName": "com.tellolabs.appfin",
+      "description": "Force stop Android apps individually or in batches using Accessibility, with app exclusions, session results, and cancellation. No root or Shizuku required.",
       "iconUrl": null,
       "repositoryUrl": "https://github.com/yusriyadi/appfin",
       "releases": [
         {
-          "tag": "first-release",
-          "versionName": null,
-          "versionCode": null,
-          "releasedAt": null,
-          "minSdk": null,
+          "tag": "v0.1.0",
+          "versionName": "0.1.0",
+          "versionCode": 1,
+          "releasedAt": "2026-10-25",
+          "minSdk": 26,
           "changelog": [],
           "apkUrl": "https://github.com/yusriyadi/appfin/releases/download/first-release/app-release.apk"
         }
@@ -43,7 +43,7 @@
       "id": "tellauncher",
       "name": "Tellauncher",
       "packageName": "id.tellolabs.launcher",
-      "description": "A minimalist Android launcher with a quiet Home screen, searchable apps, custom shelves, and local settings backup. No accounts, ads, or internet required.",
+      "description": "A minimalist Android launcher with a quiet Home screen, searchable apps, custom shelves, and local settings backup. No accounts or internet required.",
       "iconUrl": null,
       "repositoryUrl": "https://github.com/yusriyadi/tellauncher",
       "releases": [
@@ -58,7 +58,7 @@
             "Drag to reorder custom shelves and optionally swipe between shelves in the drawer.",
             "Tap a shelf to select it or use the pencil icon to edit.",
             "More room for search results in the shelf editor, with Save and Delete icons in the top bar.",
-            "Show launcher Settings only in All apps, while keeping it searchable even when hidden.",
+            "Show launcher Settings only in All apps, while keeping it searchable even when its visibility switch is off.",
             "Change the default launcher even when Tellauncher is already the default."
           ],
           "apkUrl": "https://github.com/yusriyadi/tellauncher/releases/download/v0.5.0/Tellauncher-0.5.0.apk"
