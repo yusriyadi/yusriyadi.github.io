@@ -128,6 +128,30 @@
           "apkUrl": "https://github.com/yusriyadi/tellapps-shelf/releases/download/v0.1.0/TellApps-Shelf-0.1.0.apk"
         }
       ]
+    },
+    {
+      "id": "markdown-open",
+      "name": "Markdown Open",
+      "packageName": "com.markdownopen.app",
+      "description": "An offline Markdown viewer with syntax highlighting, Mermaid diagrams with zoom and scrolling, Android document selection, Open With/Share support, and PDF export through the system print dialog.",
+      "iconUrl": null,
+      "repositoryUrl": "https://github.com/yusriyadi/markdown-open",
+      "releases": [
+        {
+          "tag": "v1.1.0",
+          "versionName": "1.1.0",
+          "versionCode": 1001000,
+          "releasedAt": "2026-11-01",
+          "minSdk": 24,
+          "changelog": [
+            "Open UTF-8 Markdown files using the Android document picker or Open With/Share.",
+            "View Markdown tables, highlighted code, and offline Mermaid diagrams with zoom and two-way scrolling.",
+            "Export documents through the Android print dialog, including Save as PDF when available.",
+            "Use an optimized arm64 release APK, approximately 12.1 MiB. This download is signed with the local debug key for manual installation."
+          ],
+          "apkUrl": "https://github.com/yusriyadi/markdown-open/releases/download/v1.1.0/Markdown-Open-1.1.0-android-arm64-release-local-signed.apk"
+        }
+      ]
     }
   ]
 }
