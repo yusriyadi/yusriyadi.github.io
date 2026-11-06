@@ -1,949 +1,719 @@
-<!DOCTYPE html>
-<html lang="en">
-
+<!doctype html>
+<html lang="id">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Log Viewer V3 – Advanced</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <style>
-        /* --- Reset & Base --- */
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-            color: #1f2937;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* --- Layout --- */
-        .app-header {
-            background: #ffffff;
-            border-bottom: 1px solid #e5e7eb;
-            height: 64px;
-            display: flex;
-            align-items: center;
-            padding: 0 1.5rem;
-            flex-shrink: 0;
-            justify-content: space-between;
-            gap: 1rem;
-        }
-
-        .brand {
-            font-weight: 700;
-            font-size: 1.2rem;
-            color: #4f46e5;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            min-width: 140px;
-        }
-
-        .brand svg {
-            width: 24px;
-            height: 24px;
-            fill: currentColor;
-        }
-
-        /* Search Bar in Header */
-        .search-container {
-            flex: 1;
-            max-width: 600px;
-            position: relative;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 0.5rem 1rem 0.5rem 2.5rem;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            background: #f9fafb;
-            font-size: 0.95rem;
-            outline: none;
-            transition: all 0.2s;
-        }
-
-        .search-input:focus {
-            background: #fff;
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 0.75rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #9ca3af;
-            width: 18px;
-            height: 18px;
-        }
-
-        /* Filters Bar */
-        .filters-bar {
-            background: #ffffff;
-            border-bottom: 1px solid #e5e7eb;
-            padding: 0.75rem 1.5rem;
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-            flex-shrink: 0;
-            overflow-x: auto;
-        }
-
-        select.filter-select {
-            padding: 0.4rem 2rem 0.4rem 0.8rem;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            background-color: #fff;
-            font-size: 0.85rem;
-            color: #374151;
-            cursor: pointer;
-            outline: none;
-        }
-
-        select.filter-select:hover {
-            border-color: #9ca3af;
-        }
-
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-        }
-
-        .btn-upload {
-            border: 1px solid #d1d5db;
-            color: #374151;
-            background-color: white;
-            padding: 0.4rem 1rem;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-upload:hover {
-            background-color: #f9fafb;
-        }
-
-        .file-input-wrapper input[type=file] {
-            font-size: 100px;
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 1px solid #d1d5db;
-            color: #374151;
-            padding: 0.4rem 1rem;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-outline:hover {
-            background: #f3f4f6;
-            border-color: #9ca3af;
-        }
-
-        /* --- Main Content (Split View?) or List View --- */
-        .main-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            scroll-behavior: smooth;
-        }
-
-        /* Log Card */
-        .log-card {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: box-shadow 0.2s;
-        }
-
-        .log-card:hover {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-
-        .log-header {
-            padding: 0.75rem 1rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            border-bottom: 1px solid #f3f4f6;
-            background: #fdfdfd;
-            cursor: pointer;
-        }
-
-        .log-header:hover {
-            background: #f8fafc;
-        }
-
-        .badge {
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .badge-success {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        /* Green */
-        .badge-error {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        /* Red */
-        .badge-slow {
-            background: #fef9c3;
-            color: #854d0e;
-        }
-
-        /* Yellow */
-
-        .log-time {
-            font-size: 0.85rem;
-            color: #6b7280;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .log-endpoint {
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: #1f2937;
-            flex: 1;
-            word-break: break-all;
-        }
-
-        .log-meta {
-            font-size: 0.8rem;
-            color: #6b7280;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .log-body {
-            display: none;
-            /* hidden by default */
-            padding: 1rem;
-            background: #fafafa;
-            border-top: 1px solid #f3f4f6;
-            font-family: 'Menlo', 'Monaco', monospace;
-            font-size: 0.8rem;
-        }
-
-        .log-card.open .log-body {
-            display: block;
-        }
-
-        .json-block {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            color: #374151;
-            margin-bottom: 1rem;
-        }
-
-        .label {
-            font-weight: 600;
-            color: #4b5563;
-            margin-bottom: 0.25rem;
-            display: block;
-            font-family: sans-serif;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        /* Empty State */
-        .empty-state {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #9ca3af;
-            text-align: center;
-        }
-
-        .empty-state p {
-            margin-top: 1rem;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        /* Syntax Highlight Colors (Simple) */
-        .key {
-            color: #7c3aed;
-        }
-
-        .string {
-            color: #059669;
-        }
-
-        .number {
-            color: #d97706;
-        }
-
-        .boolean {
-            color: #2563eb;
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-    </style>
-
-    <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LogViewer V3</title>
+<style>
+  :root { color-scheme: light; font: 15px system-ui, sans-serif; color: #202938; background: #f1f2f5; }
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  header, nav { background: #fff; border-bottom: 1px solid #e1e5eb; display: flex; align-items: center; gap: 1rem; padding: .95rem clamp(1rem, 3vw, 2rem); flex-wrap: wrap; }
+  h1 { margin: 0; color: #5145e5; font-size: 1.4rem; }
+  .search-stack { flex: 1 1 18rem; min-width: 0; max-width: 45rem; margin-inline: auto; }
+  .search-stack input { width: 100%; background: #f7f8fa; }
+  .text-button { border: 0; padding: .35rem 0; color: #5145e5; font-size: .88rem; }
+  #queryForm { padding: .7rem; border: 1px solid #e1e5eb; border-radius: .45rem; }
+  .query-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .55rem; margin-top: .55rem; }
+  #queryStatus { margin: .45rem 0 0; font-size: .88rem; color: #526071; }
+  #queryStatus:empty { display: none; }
+  #queryStatus[data-error] { color: #a92726; }
+  dialog { width: min(48rem, calc(100% - 2rem)); max-height: 85vh; border: 1px solid #d2d8e2; border-radius: .65rem; color: inherit; overflow: auto; }
+  dialog::backdrop { background: #20293866; }
+  dialog li { margin-bottom: .5rem; }
+  .cheat-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  dialog h3 { font-size: 1rem; margin: 1.2rem 0 .5rem; }
+  dialog code { overflow-wrap: anywhere; }
+  dialog table { width: 100%; border-collapse: collapse; }
+  dialog th, dialog td { padding: .4rem .5rem; border-bottom: 1px solid #e1e5eb; text-align: left; vertical-align: top; }
+  button, select, input { font: inherit; color: inherit; border: 1px solid #d2d8e2; border-radius: .45rem; background: white; padding: .55rem .75rem; }
+  button, select { cursor: pointer; }
+  :disabled { cursor: default; opacity: .55; }
+  #count { margin-left: auto; color: #526071; }
+  .download-group { display: flex; align-items: center; gap: .45rem; }
+  .download-label { color: #526071; font-size: .88rem; }
+  .download-formats { display: inline-flex; border: 1px solid #d2d8e2; border-radius: .45rem; }
+  .download-formats button { border: 0; padding: .4rem .55rem; font-size: .88rem; }
+  .download-formats button + button { border-left: 1px solid #d2d8e2; border-radius: 0 .4rem .4rem 0; }
+  .pagination { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: .75rem; }
+  main { padding: 1rem clamp(1rem, 3vw, 2rem) 2rem; }
+  #notice, #archiveSummary { color: #526071; overflow-wrap: anywhere; }
+  #notice:empty, #archiveSummary:empty { display: none; }
+  details { background: white; border: 1px solid #dde2ea; border-radius: .65rem; margin-bottom: .85rem; overflow: hidden; }
+  summary { display: grid; grid-template-columns: 5rem minmax(0, 1fr) auto auto; align-items: start; gap: 1rem; cursor: pointer; padding: 1rem; }
+  summary::after { content: '⌄'; color: #687588; grid-column: 4; justify-self: end; }
+  details[open] summary::after { content: '⌃'; }
+  .tag { display: inline-block; border-radius: .35rem; padding: .18rem .45rem; background: #e9edf3; font-weight: 700; }
+  .status-badge { justify-self: center; text-align: center; }
+  .ok { background: #d8fae5; color: #126737; }
+  .error { background: #ffe2e0; color: #a92726; }
+  .method, .meta, .url { display: block; color: #526071; margin-top: .22rem; font-size: .88rem; overflow-wrap: anywhere; }
+  .path { overflow-wrap: anywhere; }
+  .duration { color: #167544; white-space: nowrap; font-weight: 600; }
+  .fields { border-top: 1px solid #e1e5eb; background: #f8f9fb; padding: 1rem; }
+  h2 { font-size: .8rem; margin: 0 0 .35rem; text-transform: uppercase; letter-spacing: .03em; color: #4b5668; }
+  .field-heading { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .35rem; }
+  .field-heading h2 { margin: 0; }
+  .entry-actions { display: flex; justify-content: flex-end; margin-bottom: .75rem; }
+  .copy { font-size: .8rem; padding: .25rem .55rem; }
+  pre { background: white; border: 1px solid #e1e5eb; border-radius: .35rem; padding: .65rem; margin: 0 0 1rem; white-space: pre-wrap; overflow-wrap: anywhere; font: .88rem/1.45 ui-monospace, monospace; }
+  pre:last-child { margin-bottom: 0; }
+  [hidden] { display: none !important; }
+  @media (max-width: 550px) { summary { grid-template-columns: 3.8rem minmax(0, 1fr); gap: .5rem; } .duration { grid-column: 2; } summary::after { grid-column: 2; } #count { margin-left: 0; } }
+</style>
 </head>
-
 <body>
+<header>
+  <h1>☷ LogViewer V3</h1>
+  <div class="search-stack">
+    <input id="search" type="search" aria-label="Cari log" placeholder="Cari UUID, response, atau endpoint…" disabled>
+    <button id="advancedSearch" class="text-button" type="button" aria-controls="queryForm" aria-expanded="false">Advanced Search</button>
+    <form id="queryForm" hidden>
+      <input id="queryInput" aria-label="Query log" placeholder='method = "POST" and responseCode >= 400' spellcheck="false" autocomplete="off">
+      <div class="query-actions">
+        <button id="runQuery" type="submit" disabled>Jalankan</button>
+        <button id="clearQuery" type="button">Reset</button>
+        <button id="queryExample" class="text-button" type="button">Pakai contoh</button>
+        <button id="cheatSheetButton" class="text-button" type="button">Cheat Sheet</button>
+      </div>
+      <p id="queryStatus" role="status"></p>
+    </form>
+  </div>
+</header>
+<dialog id="cheatSheet" aria-labelledby="cheatSheetTitle">
+  <div class="cheat-heading">
+    <h2 id="cheatSheetTitle">Cheat Sheet · Advanced Search</h2>
+    <form method="dialog"><button>Tutup</button></form>
+  </div>
+  <p>Pilih tanggal, tulis kondisi dengan pola <code>field operator nilai</code>, lalu tekan Enter atau klik <strong>Jalankan</strong>. Gabungkan beberapa kondisi dengan <code>and</code> jika semuanya harus cocok.</p>
 
-    <!-- Header -->
-    <header class="app-header">
-        <div class="brand">
-            <svg viewBox="0 0 24 24">
-                <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" />
-            </svg>
-            <span>LogViewer V3</span>
-        </div>
-        <div class="search-container hidden" id="searchBox">
-            <svg class="search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input type="text" id="searchInput" class="search-input"
-                placeholder="Search UUID, Response, or Endpoint...">
-        </div>
-        <div style="width: 140px;"> <!-- spacer to balance logo --> </div>
-    </header>
+  <h3>Operator</h3>
+  <table>
+    <thead><tr><th scope="col">Operator</th><th scope="col">Arti</th><th scope="col">Contoh</th></tr></thead>
+    <tbody>
+      <tr><td><code>=</code></td><td>Sama persis</td><td><code class="query-sample">method = "GET"</code></td></tr>
+      <tr><td><code>!=</code></td><td>Field ada dan nilainya berbeda</td><td><code class="query-sample">responseCode != 200</code></td></tr>
+      <tr><td><code>&gt;</code></td><td>Angka lebih besar</td><td><code class="query-sample">responseTimeMs &gt; 1000</code></td></tr>
+      <tr><td><code>&gt;=</code></td><td>Angka lebih besar atau sama</td><td><code class="query-sample">responseCode &gt;= 400</code></td></tr>
+      <tr><td><code>&lt;</code></td><td>Angka lebih kecil</td><td><code class="query-sample">responseTimeMs &lt; 100</code></td></tr>
+      <tr><td><code>&lt;=</code></td><td>Angka lebih kecil atau sama</td><td><code class="query-sample">params.fileSizeBytes &lt;= 1048576</code></td></tr>
+      <tr><td><code>contains</code></td><td>Teks memuat potongan yang dicari</td><td><code class="query-sample">endpoint contains "/app/options"</code></td></tr>
+    </tbody>
+  </table>
 
-    <!-- Filters & Controls -->
-    <div class="filters-bar">
-        <div class="file-input-wrapper">
-            <button class="btn-upload">📂 Upload ZIP</button>
-            <input type="file" id="localZip" accept=".zip">
-        </div>
+  <h3>Tipe nilai</h3>
+  <ul>
+    <li><strong>Teks</strong> memakai tanda kutip ganda. <code>"29"</code> adalah teks, sedangkan <code>29</code> adalah angka. Huruf besar dan kecil berpengaruh pada nama field dan pencocokan teks. Pakai <code>\"</code> jika tanda kutip merupakan bagian dari teks yang dicari.</li>
+    <li><strong>Angka</strong> bisa ditulis sebagai integer, desimal, atau notasi eksponen, misalnya <code>200</code>, <code>100.5</code>, dan <code>1e3</code>. Integer di luar rentang aman JavaScript membutuhkan browser yang menyediakan token angka asli.</li>
+    <li><strong>Boolean dan null</strong> ditulis tanpa kutip, misalnya <code class="query-sample">data.ok = true</code>, <code class="query-sample">data.ok = false</code>, dan <code class="query-sample">data.result = null</code>. Field yang hilang tidak cocok dengan kondisi apa pun. Gunakan <code>null</code> untuk field yang ada dengan nilai null.</li>
+  </ul>
 
-        <div class="separator" style="width:1px; height:24px; background:#e5e7eb;"></div>
+  <h3>Field dan path</h3>
+  <ul>
+    <li><strong>Metadata log.</strong> Gunakan field seperti <code>uuid</code>, <code>requestTime</code>, <code>endTimeRequest</code>, <code>endpoint</code>, <code>method</code>, <code>responseCode</code>, <code>responseTimeMs</code>, <code>httpStatus</code>, dan <code>exception</code> jika tersedia. Durasi dihitung dalam milidetik.</li>
+    <li><strong>Field bertingkat.</strong> Gunakan titik untuk masuk ke objek. Nama field boleh berisi huruf, angka, garis bawah, atau tanda hubung, dengan huruf atau garis bawah di awal.</li>
+    <li><strong>Array.</strong> Gunakan indeks mulai dari <code>[0]</code>, misalnya <code class="query-sample">headers.x-device-no[0] = "13"</code> atau <code class="query-sample">data.data[0].OutletID = "47136"</code>.</li>
+    <li><strong>Wildcard array.</strong> Gunakan <code>[*]</code> supaya kondisi cocok jika minimal satu item memenuhi filter, misalnya <code class="query-sample">params.data.Details_Item[*].TransactionID = "29"</code>. Setiap kondisi dalam <code>and</code> bisa cocok dengan item yang berbeda.</li>
+    <li><strong>Body.</strong> Mulai dari <code>params</code> untuk body request atau <code>data</code> untuk body response. Tambahkan satu segmen path untuk setiap level objek. Untuk body teks atau JSON terpotong, cari teksnya langsung, misalnya <code class="query-sample">data contains "[TRUNCATED"</code>.</li>
+  </ul>
 
-        <select id="dateSelect" class="filter-select hidden">
-            <option value="">Select Date</option>
-        </select>
-
-        <select id="endpointSelect" class="filter-select hidden">
-            <option value="all">All Endpoints</option>
-        </select>
-
-        <select id="statusSelect" class="filter-select hidden">
-            <option value="all">All Status</option>
-            <option value="200">200 OK</option>
-            <option value="error">Errors</option>
-            <option value="slow">Slow (>2s)</option>
-        </select>
-
-        <div style="flex:1"></div>
-        <span id="logCount" style="font-size:0.85rem; color:#6b7280; margin-right: 1rem;"></span>
-        <button id="downloadBtn" class="btn-outline hidden">Download Logs</button>
+  <h3>Contoh investigasi</h3>
+  <ul>
+    <li>Request POST dengan HTTP 4xx atau 5xx <code class="query-sample">method = "POST" and responseCode &gt;= 400</code></li>
+    <li>Endpoint options lebih dari satu detik <code class="query-sample">endpoint contains "/app/options" and responseTimeMs &gt; 1000</code></li>
+    <li>Upload arsip gagal <code class="query-sample">responseCode = "FAILED" and params.objectKey contains "NetworkLog"</code></li>
+    <li>ID transaksi di objek <code>data</code> dalam Params / body <code class="query-sample">params.data.TransactionID = "29"</code></li>
+    <li>ID transaksi di objek <code>data</code> dalam Response data <code class="query-sample">data.data.TransactionID = "29"</code></li>
+    <li>ID transaksi langsung di root Response data <code class="query-sample">data.TransactionID = "29"</code></li>
+    <li>ID pada item mana pun yang memuat teks <code>29</code> <code class="query-sample">params.data.Details_Item[*].TransactionID contains "29"</code></li>
+    <li>AutoClearing sebagai string di Params / body <code class="query-sample">params.data.AutoClearing = "true"</code></li>
+    <li>AutoClearing sebagai boolean di Params / body <code class="query-sample">params.data.AutoClearing = true</code></li>
+    <li>AutoClearing sebagai string di objek <code>data</code> dalam Response data <code class="query-sample">data.data.AutoClearing = "true"</code></li>
+    <li>Potongan teks JSON mentah <code class="query-sample">params contains "\"AutoClearing\":\"true\""</code>. Pencocokan ini mengikuti spasi pada teks asli, jadi gunakan query berdasarkan field jika memungkinkan.</li>
+  </ul>
+  <p>Query aktif digabung dengan pencarian teks dan dropdown Endpoint, Status, serta Method. Unduhan JSON dan JSONL mengikuti hasil gabungan itu di semua halaman. Klik <strong>Reset</strong> untuk melepas query.</p>
+</dialog>
+<nav aria-label="Kontrol log">
+  <button id="uploadButton" type="button">Upload ZIP</button>
+  <input id="upload" type="file" accept=".zip,application/zip" hidden>
+  <select id="date" aria-label="Pilih tanggal" disabled><option value="">Pilih tanggal</option></select>
+  <select id="endpoint" aria-label="Filter endpoint" disabled><option value="">Semua endpoint</option></select>
+  <select id="httpStatus" aria-label="Filter status" disabled><option value="">Semua status</option></select>
+  <select id="httpMethod" aria-label="Filter method" disabled><option value="">Semua method</option></select>
+  <span id="count"></span>
+  <div class="download-group" role="group" aria-label="Unduh hasil filter">
+    <span class="download-label" aria-hidden="true">Unduh hasil filter</span>
+    <div class="download-formats">
+      <button id="download" type="button" aria-label="Unduh JSON" disabled>JSON</button>
+      <button id="downloadJsonl" type="button" aria-label="Unduh JSONL" disabled>JSONL</button>
     </div>
-
-    <!-- Main Content -->
-    <div class="main-area" id="mainArea">
-        <!-- Empty State -->
-        <div id="emptyState" class="empty-state">
-            <svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <p>Upload a NetworkLog ZIP to begin analyzing.</p>
-        </div>
-
-        <!-- Logs List Container -->
-        <div id="logsList" style="display:none; flex-direction:column; gap:1rem;"></div>
-    </div>
-
-    <script>
-        (function () {
-            // --- Elements ---
-            const localZipInput = document.getElementById('localZip');
-            const dateSelect = document.getElementById('dateSelect');
-            const endpointSelect = document.getElementById('endpointSelect');
-            const statusSelect = document.getElementById('statusSelect');
-            const searchInput = document.getElementById('searchInput');
-            const logsList = document.getElementById('logsList');
-            const emptyState = document.getElementById('emptyState');
-            const logCount = document.getElementById('logCount');
-            const searchBox = document.getElementById('searchBox');
-            const downloadBtn = document.getElementById('downloadBtn');
-
-            // --- State ---
-            let zipFilenames = [];
-            let zipBuffer = null;
-            let parsedLogsCache = {};
-            let storedPassword = '';
-            let allLogs = []; // parsed logs
-            let currentFilteredLogs = [];
-
-            const DEFAULT_KEY = 'NUTAPOSJOGJA';
-
-            // --- Crypto Logic ---
-            const generateKey = pwd => {
-                const hash = CryptoJS.SHA256(pwd);
-                const words = hash.words.slice(0, 4);
-                return CryptoJS.lib.WordArray.create(words, 16);
-            };
-
-            const decryptBase64 = (b64, keys) => {
-                try {
-                    const ct = CryptoJS.enc.Base64.parse(b64);
-                    for (const k of keys) {
-                        try {
-                            const dec = CryptoJS.AES.decrypt({ ciphertext: ct }, k, { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7 });
-                            const txt = dec.toString(CryptoJS.enc.Utf8);
-                            if (txt) return txt;
-                        } catch (e) { }
-                    }
-                } catch (e) { }
-                return null;
-            };
-
-            const replaceEncrypted = (text, keys) => {
-                // Fast check
-                if (!text.includes('#START#')) return text;
-
-                return text.replace(/#START#(.*?)#END#/g, (match, p1) => {
-                    const dec = decryptBase64(p1.trim(), keys);
-                    return dec !== null ? dec : match;
-                });
-            };
-
-            // --- Parsing Logic ---
-            const parseLogs = (rawText) => {
-                const logs = [];
-                // Split by marker
-                const blocks = rawText.split(/========== Request Log ==========/g);
-
-                blocks.forEach(block => {
-                    if (!block.trim()) return;
-
-                    // Separate rDb lines from the block
-                    const lines = block.split(/\r?\n/);
-                    const rdbLines = [];
-                    const otherLines = [];
-
-                    lines.forEach(line => {
-                        if (line.trim().startsWith('rDb@')) {
-                            rdbLines.push(line.trim());
-                        } else {
-                            otherLines.push(line);
-                        }
-                    });
-
-                    // 1. Process Network Log (if exists in this block)
-                    const networkChunk = otherLines.join('\n').trim();
-                    if (networkChunk.length > 0 && (networkChunk.includes('UUID:') || networkChunk.includes('Endpoint:'))) {
-                        const logItem = {
-                            type: 'network',
-                            raw: networkChunk,
-                            uuid: '',
-                            time: '',
-                            endpoint: '',
-                            status: '',
-                            duration: 0,
-                            durationStr: '',
-                            params: '',
-                            responseData: ''
-                        };
-
-                        // Simple regex extraction
-                        const matchUUID = networkChunk.match(/UUID:\s*(.+)/);
-                        if (matchUUID) logItem.uuid = matchUUID[1].trim();
-
-                        const matchTime = networkChunk.match(/Time Request:\s*(.+)/);
-                        if (matchTime) logItem.time = matchTime[1].trim();
-
-                        const matchEndpoint = networkChunk.match(/Endpoint:\s*(.+)/);
-                        if (matchEndpoint) logItem.endpoint = matchEndpoint[1].trim();
-
-                        const matchStatus = networkChunk.match(/Response Code:\s*(\d+)/);
-                        if (matchStatus) logItem.status = matchStatus[1].trim();
-
-                        // Support both formats for Duration if available
-                        const matchDuration = networkChunk.match(/Response Time:\s*([\d,.]+)\s*ms/);
-                        if (matchDuration) {
-                            logItem.durationStr = matchDuration[1].replace(',', '.') + ' ms';
-                            logItem.duration = parseFloat(matchDuration[1].replace(',', '.'));
-                        }
-
-                        // Extract multi-line JSONs safely
-                        const matchParams = networkChunk.match(/Params:\s*([\s\S]*?)(?=\nHeaders:)/);
-                        if (matchParams) logItem.params = matchParams[1].trim();
-
-                        // Extract Headers
-                        const matchHeaders = networkChunk.match(/Headers:\s*([\s\S]*?)(?=\n(?:Response Code|Response Time|Data|Response Data):)/);
-                        // Fallback if Headers is followed by empty line or end of block
-                        const matchHeadersFallback = networkChunk.match(/Headers:\s*(.*)/);
-
-                        if (matchHeaders) logItem.headers = matchHeaders[1].trim();
-                        else if (matchHeadersFallback && !logItem.params) {
-                            // Only use fallback if we didn't match cleanly, careful not to grab too much
-                            // Actually, let's just grab the line if simplified
-                            logItem.headers = matchHeadersFallback[1].trim();
-                        }
-
-                        // If logic above is too complex, let's stick to the structure:
-                        // Params -> Headers -> Response Code
-                        const headersBlock = networkChunk.split('Headers:')[1];
-                        if (headersBlock) {
-                            // Take until "Response Code"
-                            const hParts = headersBlock.split(/Response Code:|Response Time:/);
-                            if (hParts[0]) logItem.headers = hParts[0].trim();
-                        }
-
-                        const matchRespV1 = networkChunk.match(/Response Data:\s*([\s\S]*?)(?=\n-{10}|$)/);
-                        const matchRespV2 = networkChunk.match(/Data:\s*([\s\S]*?)(?=\n-{10}|$)/);
-
-                        if (matchRespV1) logItem.responseData = matchRespV1[1].trim();
-                        else if (matchRespV2) logItem.responseData = matchRespV2[1].trim();
-
-                        logs.push(logItem);
-                    }
-
-                    // 2. Process System Logs (rDb lines)
-                    rdbLines.forEach(line => {
-                        let time = '';
-                        // Try to extract time: rDb@(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})
-                        const timeMatch = line.match(/rDb@(Error@)?(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/);
-                        if (timeMatch) time = timeMatch[2];
-
-                        logs.push({
-                            type: 'system',
-                            raw: line,
-                            data: line,
-                            time: time,
-                            isError: line.includes('@Error@')
-                        });
-                    });
-                });
-                return logs;
-            };
-
-            // --- Rendering ---
-            const formatJSON = (str) => {
-                if (!str || str === 'No Body') return str;
-                try {
-                    // Sometimes params are like "token=..." or "devid=..." not JSON
-                    if (str.startsWith('{') || str.startsWith('[')) {
-                        const obj = JSON.parse(str);
-                        return JSON.stringify(obj, null, 2);
-                    }
-                } catch (e) { }
-                return str;
-            };
-
-            const syntaxHighlight = (json) => {
-                if (typeof json !== 'string') {
-                    json = JSON.stringify(json, undefined, 2);
-                }
-                json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-                    var cls = 'number';
-                    if (/^"/.test(match)) {
-                        if (/:$/.test(match)) {
-                            cls = 'key';
-                        } else {
-                            cls = 'string';
-                        }
-                    } else if (/true|false/.test(match)) {
-                        cls = 'boolean';
-                    } else if (/null/.test(match)) {
-                        cls = 'null';
-                    }
-                    return '<span class="' + cls + '">' + match + '</span>';
-                });
-            }
-
-            const getBaseEndpoint = (url) => {
-                try {
-                    const u = new URL(url);
-                    return u.pathname;
-                } catch (e) { return url; }
-            };
-
-            const renderLogs = (logs) => {
-                logsList.innerHTML = '';
-                if (logs.length === 0) {
-                    logsList.innerHTML = '<div style="text-align:center; padding:2rem; color:#9ca3af">No matching logs found.</div>';
-                    logCount.textContent = '0 logs';
-                    return;
-                }
-
-                // Chunk rendering to keep UI responsive
-                const CHUNK_SIZE = 50;
-                let currentIndex = 0;
-
-                // Clear previous
-                logsList.innerHTML = '';
-                logsList.style.display = 'flex';
-                emptyState.classList.add('hidden');
-
-                const renderChunk = () => {
-                    const chunk = logs.slice(currentIndex, currentIndex + CHUNK_SIZE);
-                    if (chunk.length === 0) return;
-
-                    const frag = document.createDocumentFragment();
-
-                    chunk.forEach(log => {
-                        const el = document.createElement('div');
-
-                        if (log.type === 'system') {
-                            // --- System Log Card ---
-                            el.className = 'log-card ' + (log.isError ? 'system-error' : 'system-log');
-                            el.style.borderLeft = log.isError ? '4px solid #ef4444' : '4px solid #3b82f6';
-                            el.style.backgroundColor = log.isError ? '#fef2f2' : '#eff6ff';
-
-                            el.innerHTML = `
-                                <div style="padding: 0.75rem 1rem;">
-                                    <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.75rem; color:#6b7280;">
-                                        <span style="font-weight:700; color:${log.isError ? '#b91c1c' : '#1d4ed8'}">SYSTEM LOG</span>
-                                        <span>${log.time || ''}</span>
-                                    </div>
-                                    <div style="font-family:monospace; font-size:0.85rem; white-space:pre-wrap; word-break:break-all; color:${log.isError ? '#991b1b' : '#1e3a8a'}">${log.data}</div>
-                                </div>
-                            `;
-                        } else {
-                            // --- Network Log Card ---
-                            el.className = 'log-card';
-                            const isError = log.status !== '200';
-                            const isSlow = log.duration > 2000;
-
-                            let statusBadge = `<span class="badge ${isError ? 'badge-error' : 'badge-success'}">${log.status || '???'}</span>`;
-                            if (isSlow) statusBadge += ` <span class="badge badge-slow">SLOW</span>`;
-
-                            // Guess Method (Approximate since params might be encrypted)
-                            const method = (log.params && log.params !== 'No Body' && log.params !== '[]') ? 'POST' : 'GET';
-                            const shortPath = getBaseEndpoint(log.endpoint);
-
-                            el.innerHTML = `
-                            <div class="log-header" onclick="this.parentElement.classList.toggle('open')">
-                                <div style="display:flex; flex-direction:column; align-items:center; gap:4px; min-width:60px;">
-                                    ${statusBadge}
-                                    <span style="font-size:0.7rem; font-weight:700; color:#6b7280;">${method}</span>
-                                </div>
-                                
-                                <div style="flex:1; overflow:hidden;">
-                                    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:0.25rem;">
-                                        <span class="log-endpoint" title="${log.endpoint}">${shortPath}</span>
-                                        ${log.durationStr ? `<span style="font-size:0.8rem; font-weight:600; color:${isSlow ? '#c2410c' : '#16a34a'}">${log.durationStr}</span>` : ''}
-                                    </div>
-                                    <div class="log-meta">
-                                        <span style="font-weight:500; color:#374151;">${log.time || 'No Time'}</span>
-                                        <span style="color:#e5e7eb">|</span>
-                                        <span style="font-family:monospace; font-size:0.75rem;">${log.uuid}</span>
-                                    </div>
-                                    <div style="font-size:0.75rem; color:#9ca3af; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                                        ${log.endpoint}
-                                    </div>
-                                </div>
-                                <svg width="20" height="20" fill="none" stroke="#9ca3af" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                            </div>
-                            <div class="log-body">
-                                <button class="btn-decrypt-card btn-outline" style="margin-bottom:1rem; width:100%; border-color:#4f46e5; color:#4f46e5; display:flex; justify-content:center; align-items:center; gap:0.5rem;">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17a2 2 0 100-4 2 2 0 000 4zm6-9h-1V6a5 5 0 00-10 0v2H6a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V10a2 2 0 00-2-2zM9 6a3 3 0 116 0v2H9V6z"/></svg> 
-                                    Decrypt Content
-                                </button>
-                                
-                                <div class="decrypted-content hidden">
-                                    <div style="margin-bottom:1rem;">
-                                        <span class="label">Full Endpoint</span>
-                                        <div style="font-family:monospace; word-break:break-all; background:#fff; padding:0.5rem; border:1px solid #e5e7eb; border-radius:4px;">${log.endpoint}</div>
-                                    </div>
-
-                                    <span class="label">Params / Body</span>
-                                    <div class="json-block params-block"></div>
-
-                                    <span class="label">Headers</span>
-                                    <div class="json-block headers-block" style="background:#f8fafc; border:1px dashed #e2e8f0; padding:0.5rem;"></div>
-                                    
-                                    <span class="label">Response Data</span>
-                                    <div class="json-block response-block"></div>
-                                </div>
-                            </div>
-                        `;
-
-                            const btnDecrypt = el.querySelector('.btn-decrypt-card');
-                            const contentDiv = el.querySelector('.decrypted-content');
-                            const paramsBlock = el.querySelector('.params-block');
-                            const headersBlock = el.querySelector('.headers-block');
-                            const responseBlock = el.querySelector('.response-block');
-
-                            // Decrypt Handler
-                            btnDecrypt.onclick = (e) => {
-                                e.stopPropagation();
-                                btnDecrypt.textContent = 'Decrypting...';
-                                btnDecrypt.disabled = true;
-
-                                setTimeout(() => {
-                                    const keys = [generateKey(DEFAULT_KEY)];
-                                    if (storedPassword) keys.unshift(generateKey(storedPassword));
-
-                                    const decParams = replaceEncrypted(log.params || '', keys);
-                                    const decHeaders = replaceEncrypted(log.headers || '', keys);
-                                    const decResp = replaceEncrypted(log.responseData || '', keys);
-
-                                    paramsBlock.innerHTML = syntaxHighlight(formatJSON(decParams));
-                                    headersBlock.innerHTML = decHeaders ? syntaxHighlight(formatJSON(decHeaders)) : '<span style="color:#9ca3af; font-style:italic;">No Headers</span>';
-                                    responseBlock.innerHTML = syntaxHighlight(formatJSON(decResp));
-
-                                    // Replace button with content or just hide button?
-                                    // User said "tombol decript nya di masih2 card". Hiding it after use is better.
-                                    btnDecrypt.parentElement.removeChild(btnDecrypt);
-                                    contentDiv.classList.remove('hidden');
-                                }, 20); // Small delay to let UI render the 'Decrypting...' text if needed
-                            };
-                        }
-                        frag.appendChild(el);
-                    });
-
-                    logsList.appendChild(frag);
-                    currentIndex += CHUNK_SIZE;
-
-                    if (currentIndex < logs.length) {
-                        requestAnimationFrame(renderChunk);
-                    }
-                };
-
-                renderChunk();
-                logCount.textContent = `${logs.length} logs`;
-            };
-
-            // --- Filtering Logic ---
-            const applyFilters = () => {
-                let res = allLogs;
-
-                // Endpoint Filter
-                const ep = endpointSelect.value;
-                if (ep !== 'all') {
-                    res = res.filter(l => getBaseEndpoint(l.endpoint) === ep);
-                }
-
-                // Status Filter
-                const st = statusSelect.value;
-                if (st === 'error') res = res.filter(l => l.status !== '200');
-                else if (st === 'slow') res = res.filter(l => l.duration > 2000);
-                else if (st === '200') res = res.filter(l => l.status === '200');
-
-                // Search
-                const q = searchInput.value.toLowerCase().trim();
-                if (q) {
-                    res = res.filter(l =>
-                        l.raw.toLowerCase().includes(q)
-                    );
-                }
-
-                renderLogs(res);
-            };
-
-            // --- Download Helper ---
-            const downloadTextFile = (filename, text) => {
-                const blob = new Blob([text], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url; a.download = filename; document.body.appendChild(a); a.click();
-                URL.revokeObjectURL(url); a.remove();
-            };
-
-            // --- Zip Handling ---
-            const buildDateFolders = filenames => {
-                const dates = new Set();
-                const re = /^\d{4}-\d{2}-\d{2}$/;
-                filenames.forEach(p => {
-                    const parts = p.replace(/\\\\/g, '/').split('/').filter(Boolean);
-                    if (re.test(parts[0])) dates.add(parts[0]);
-                    else if (parts[1] && re.test(parts[1])) dates.add(parts[1]);
-                });
-                return Array.from(dates).sort();
-            };
-
-            const getFilesForDate = (filenames, date) => {
-                const re = new RegExp('(?:^|.*/)' + date.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&') + '/network_logs_.*\\.log$');
-                return filenames.filter(n => re.test(n.replace(/\\\\/g, '/')));
-            };
-
-            const uint8ToUtf8 = u8 => new TextDecoder('utf-8', { fatal: false }).decode(u8);
-
-            const processZip = async (ab, filename) => {
-                zipBuffer = new Uint8Array(ab);
-                zipFilenames = [];
-                parsedLogsCache = {};
-
-                // Pass 1: Scan filenames ONLY (Filter returns false -> no decompression)
-                await new Promise((res, rej) => {
-                    fflate.unzip(zipBuffer, {
-                        filter: (file) => {
-                            zipFilenames.push(file.name);
-                            return false;
-                        }
-                    }, (e) => e ? rej(e) : res());
-                });
-
-                const m = filename.match(/NetworkLog-(\d+)-(\d+)/);
-                storedPassword = m ? `${m[1]}.${m[2]}` : '';
-
-                const dates = buildDateFolders(zipFilenames);
-
-                dateSelect.innerHTML = '<option value="">Select Date</option>' + dates.map(d => `<option value="${d}">${d}</option>`).join('');
-
-                dateSelect.classList.remove('hidden');
-                emptyState.querySelector('p').textContent = 'Please select a date from the dropdown.';
-            };
-
-            // --- Event Listeners ---
-            localZipInput.addEventListener('change', async () => {
-                const file = localZipInput.files?.[0];
-                if (!file) return;
-                try {
-                    emptyState.classList.remove('hidden');
-                    logsList.style.display = 'none';
-                    emptyState.querySelector('p').textContent = 'Processing ZIP...';
-
-                    const ab = await file.arrayBuffer();
-                    await processZip(ab, file.name);
-                } catch (e) {
-                    alert('Error: ' + e.message);
-                }
-            });
-
-            dateSelect.addEventListener('change', async () => {
-                const date = dateSelect.value;
-                if (!date) return;
-
-                const onLogsReady = () => {
-                    // Populate Filters
-                    const endpoints = new Set(allLogs.filter(l => l.type === 'network').map(l => getBaseEndpoint(l.endpoint)));
-                    endpointSelect.innerHTML = '<option value="all">All Endpoints</option>' +
-                        Array.from(endpoints).sort().map(e => `<option value="${e}">${e}</option>`).join('');
-
-                    // Show Controls
-                    endpointSelect.classList.remove('hidden');
-                    statusSelect.classList.remove('hidden');
-                    searchBox.classList.remove('hidden');
-                    downloadBtn.classList.remove('hidden');
-
-                    // Initial Render
-                    applyFilters();
-                };
-
-                // 1. Try Cache
-                if (parsedLogsCache[date]) {
-                    allLogs = parsedLogsCache[date];
-                    onLogsReady();
-                    return;
-                }
-
-                const files = getFilesForDate(zipFilenames, date);
-                const filesSet = new Set(files);
-
-                // Show loading
-                emptyState.classList.remove('hidden');
-                logsList.style.display = 'none';
-                emptyState.querySelector('p').textContent = 'Decompressing and parsing logs...';
-
-                // Process in background
-                setTimeout(async () => {
-                    // Pass 2: Decompress ONLY needed files
-                    const decompressed = await new Promise((res, rej) => {
-                        fflate.unzip(zipBuffer, {
-                            filter: (file) => filesSet.has(file.name)
-                        }, (e, d) => e ? rej(e) : res(d));
-                    });
-
-                    let merged = '';
-                    files.forEach(n => {
-                        if (decompressed[n]) merged += uint8ToUtf8(decompressed[n]);
-                    });
-
-                    // NO DECRYPTION HERE! 
-                    // Just parse raw structure
-                    allLogs = parseLogs(merged);
-                    parsedLogsCache[date] = allLogs;
-
-                    onLogsReady();
-                }, 50);
-            });
-
-            downloadBtn.addEventListener('click', () => {
-                const date = dateSelect.value || 'logs';
-                downloadBtn.textContent = 'Decrypting...';
-
-                setTimeout(() => {
-                    const keys = [generateKey(DEFAULT_KEY)];
-                    if (storedPassword) keys.unshift(generateKey(storedPassword));
-
-                    const fullText = allLogs.map(l => {
-                        if (l.type === 'system') return l.raw;
-                        // Decrypt before download
-                        const raw = l.raw;
-                        const decRaw = replaceEncrypted(raw, keys);
-                        return '========== Request Log ==========\n' + decRaw;
-                    }).join('\n');
-
-                    downloadTextFile(`logs_v3_${date}.log`, fullText);
-                    downloadBtn.textContent = 'Download Logs';
-                }, 50);
-            });
-
-            searchInput.addEventListener('input', applyFilters);
-            endpointSelect.addEventListener('change', applyFilters);
-            statusSelect.addEventListener('change', applyFilters);
-
-        })();
-    </script>
+  </div>
+</nav>
+<main>
+  <p id="notice" role="status">Pilih ZIP network log. File dibuka langsung di browser.</p>
+  <section id="logs" aria-label="Daftar log"></section>
+  <div id="pagination" class="pagination" role="group" aria-label="Paginasi log" hidden>
+    <button id="previous" type="button">Sebelumnya</button>
+    <span id="pageInfo" aria-live="polite"></span>
+    <button id="next" type="button">Berikutnya</button>
+  </div>
+  <p id="archiveSummary" role="status"></p>
+</main>
+<script>
+const byId = id => document.getElementById(id);
+const upload = byId("upload"), date = byId("date"), endpoint = byId("endpoint");
+const httpStatus = byId("httpStatus"), search = byId("search"), download = byId("download");
+const downloadJsonl = byId("downloadJsonl");
+const httpMethod = byId("httpMethod");
+const advancedSearch = byId("advancedSearch"), queryForm = byId("queryForm");
+const queryInput = byId("queryInput"), queryStatus = byId("queryStatus"), runQuery = byId("runQuery");
+const cheatSheet = byId("cheatSheet");
+const notice = byId("notice"), logs = byId("logs"), count = byId("count");
+const archiveSummary = byId("archiveSummary");
+const pagination = byId("pagination"), pageInfo = byId("pageInfo");
+const previous = byId("previous"), next = byId("next");
+const decoder = new TextDecoder("utf-8", {fatal: true});
+const encoder = new TextEncoder();
+const header = Uint8Array.of(78, 76, 79, 71, 1, 1);
+const maxFileBytes = 32 * 1024 * 1024;
+const pageSize = 50;
+let archive, entriesByDate = new Map(), rows = [], filtered = [], page = 0, run = 0;
+let activeQuery = [], activeQueryText = "";
+const queryBodies = new WeakMap();
+
+function zipEntries(buffer) {
+  const view = new DataView(buffer);
+  const u16 = offset => view.getUint16(offset, true);
+  const u32 = offset => view.getUint32(offset, true);
+  let end = view.byteLength - 22;
+  const minimum = Math.max(0, end - 65535);
+  while (end >= minimum && (u32(end) !== 0x06054b50 || end + 22 + u16(end + 20) !== view.byteLength)) end--;
+  if (end < minimum) throw new Error("ZIP tidak valid.");
+  const total = u16(end + 10), size = u32(end + 12), start = u32(end + 16);
+  if (u16(end + 4) || u16(end + 6) || u16(end + 8) !== total ||
+      total === 65535 || start + size > end) throw new Error("Struktur ZIP tidak didukung.");
+  const result = new Map();
+  let offset = start;
+  for (let index = 0; index < total; index++) {
+    if (offset + 46 > start + size || u32(offset) !== 0x02014b50) throw new Error("Daftar file ZIP rusak.");
+    const nameLength = u16(offset + 28);
+    const next = offset + 46 + nameLength + u16(offset + 30) + u16(offset + 32);
+    if (next > start + size) throw new Error("Daftar file ZIP terpotong.");
+    const name = new TextDecoder().decode(new Uint8Array(buffer, offset + 46, nameLength));
+    const day = name.match(/(?:^|\/)(\d{4}-\d{2}-\d{2})\/[^/]+\.enc$/i)?.[1];
+    if (day) {
+      if (!result.has(day)) result.set(day, []);
+      result.get(day).push({
+        name, method: u16(offset + 10), flags: u16(offset + 8),
+        packed: u32(offset + 20), size: u32(offset + 24), local: u32(offset + 42)
+      });
+    }
+    offset = next;
+  }
+  return result;
+}
+
+async function inflate(bytes, format, limit) {
+  const reader = new Blob([bytes]).stream().pipeThrough(new DecompressionStream(format)).getReader();
+  const chunks = [];
+  let size = 0;
+  try {
+    while (true) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      size += value.length;
+      if (size > limit) {
+        await reader.cancel();
+        throw new Error("Data hasil dekompresi terlalu besar.");
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const result = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return result;
+}
+
+async function extract(buffer, entry) {
+  const view = new DataView(buffer);
+  const offset = entry.local;
+  if (entry.flags & 1 || entry.size > maxFileBytes || offset + 30 > view.byteLength ||
+      view.getUint32(offset, true) !== 0x04034b50) throw new Error("Entri ZIP tidak didukung.");
+  const start = offset + 30 + view.getUint16(offset + 26, true) + view.getUint16(offset + 28, true);
+  if (start + entry.packed > view.byteLength) throw new Error("Entri ZIP terpotong.");
+  const packed = new Uint8Array(buffer, start, entry.packed);
+  const bytes = entry.method === 0 ? packed
+    : entry.method === 8 ? await inflate(packed, "deflate-raw", entry.size) : null;
+  if (!bytes || bytes.length !== entry.size) throw new Error("Ukuran entri ZIP tidak valid.");
+  return bytes;
+}
+
+async function getKey(text) {
+  const digest = await crypto.subtle.digest("SHA-256", encoder.encode(text));
+  return crypto.subtle.importKey("raw", digest.slice(0, 16), "AES-GCM", false, ["decrypt"]);
+}
+
+async function readLog(bytes, keys, isCurrent) {
+  if (!header.every((value, index) => bytes[index] === value)) throw new Error("Format .enc bukan NLOG dengan gzip.");
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const records = [];
+  let offset = header.length, failed = 0, fallback = 0, preferred = 0;
+  while (offset < bytes.length && isCurrent()) {
+    if (bytes.length - offset < 4) { failed++; break; }
+    const size = view.getUint32(offset);
+    offset += 4;
+    if (size <= 28 || size > bytes.length - offset) { failed++; break; }
+    const record = bytes.subarray(offset, offset + size);
+    offset += size;
+    const algorithm = {name: "AES-GCM", iv: record.subarray(0, 12), additionalData: header, tagLength: 128};
+    let plaintext;
+    for (const index of [preferred, 1 - preferred]) {
+      try {
+        plaintext = await crypto.subtle.decrypt(algorithm, keys[index], record.subarray(12));
+        preferred = index;
+        break;
+      } catch { /* Try the other key. */ }
+    }
+    if (!plaintext) { failed++; continue; }
+    try {
+      const raw = decoder.decode(await inflate(plaintext, "gzip", maxFileBytes));
+      const data = JSON.parse(raw);
+      if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error("Entri JSON tidak valid.");
+      records.push({raw, data});
+      if (preferred === 1) fallback++;
+    } catch { failed++; }
+  }
+  return {records, failed, fallback};
+}
+
+function options(select, label, values) {
+  select.replaceChildren(new Option(label, ""), ...values.map(value => new Option(value, value)));
+}
+
+function resetRows() {
+  rows = [];
+  archiveSummary.textContent = "";
+  options(endpoint, "Semua endpoint", []);
+  options(httpStatus, "Semua status", []);
+  options(httpMethod, "Semua method", []);
+  search.value = "";
+  search.disabled = endpoint.disabled = httpStatus.disabled = httpMethod.disabled = true;
+  runQuery.disabled = true;
+  clearAdvancedQuery();
+  filterRows();
+}
+
+byId("uploadButton").addEventListener("click", () => upload.click());
+upload.addEventListener("change", async () => {
+  const current = ++run;
+  archive = undefined;
+  entriesByDate.clear();
+  resetRows();
+  options(date, "Pilih tanggal", []);
+  date.disabled = true;
+  const file = upload.files[0];
+  if (!file) { notice.textContent = "Pilih ZIP network log."; return; }
+  notice.textContent = "Membaca daftar file ZIP…";
+  try {
+    const buffer = await file.arrayBuffer();
+    if (current !== run) return;
+    const match = file.name.match(/^networklog-(\d+)-(\d+)(?:-[^.]+)?\.zip$/i);
+    if (!match) throw new Error("Nama ZIP harus mengikuti NetworkLog-<outletId>-<deviceNo>.zip.");
+    const dates = zipEntries(buffer);
+    if (!dates.size) throw new Error("Tidak ada file .enc di folder tanggal.");
+    archive = {buffer, outlet: match[1], device: match[2]};
+    entriesByDate = dates;
+    options(date, "Pilih tanggal", [...dates.keys()].sort().reverse());
+    date.disabled = false;
+    notice.textContent = `Outlet ${archive.outlet} · Device ${archive.device} · Pilih tanggal untuk mulai dekripsi.`;
+  } catch (error) {
+    if (current === run) notice.textContent = error.message;
+  }
+});
+
+date.addEventListener("change", async () => {
+  const current = ++run;
+  const selected = date.value;
+  resetRows();
+  if (!selected || !archive) { notice.textContent = "Pilih tanggal untuk mulai dekripsi."; return; }
+  const {buffer, outlet, device} = archive;
+  const files = entriesByDate.get(selected).slice().sort((a, b) => a.name.localeCompare(b.name, undefined, {numeric: true}));
+  notice.textContent = `Mendekripsi ${files.length} file untuk ${selected}…`;
+  try {
+    if (!globalThis.crypto?.subtle || typeof DecompressionStream !== "function") {
+      throw new Error("Gunakan browser yang mendukung Web Crypto dan dekompresi ZIP.");
+    }
+    const keys = await Promise.all([getKey(`${outlet}.${device}`), getKey("NUTAPOSJOGJA")]);
+    const merged = [];
+    const unreadable = [];
+    let failed = 0, fallback = 0;
+    for (const file of files) {
+      if (current !== run) return;
+      try {
+        const bytes = await extract(buffer, file);
+        const result = await readLog(bytes, keys, () => current === run);
+        for (const record of result.records) merged.push(record);
+        failed += result.failed;
+        fallback += result.fallback;
+      } catch {
+        unreadable.push(file.name.split("/").pop());
+      }
+    }
+    if (current !== run) return;
+    rows = merged.map(row => ({...row, path: pathOf(row.data.endpoint)}));
+    rows.sort((a, b) => String(a.data.requestTime ?? "").localeCompare(String(b.data.requestTime ?? "")));
+    options(endpoint, "Semua endpoint", [...new Set(rows.map(row => row.path))].sort());
+    options(httpStatus, "Semua status", [...new Set(rows.map(row => String(row.data.responseCode ?? "—")))].sort());
+    options(httpMethod, "Semua method", [...new Set(rows.map(row => row.data.method).filter(Boolean))].sort());
+    search.disabled = endpoint.disabled = httpStatus.disabled = httpMethod.disabled = !rows.length;
+    runQuery.disabled = !rows.length;
+    filterRows();
+    const messages = [`Outlet ${outlet} · Device ${device} · ${files.length} file .enc`];
+    if (fallback) messages.push(`${fallback} entri memakai kunci default app`);
+    if (failed) messages.push(`${failed} record gagal dibuka`);
+    if (unreadable.length) messages.push(`File gagal dibuka: ${unreadable.join(", ")}`);
+    notice.textContent = rows.length ? "" : "Tidak ada entri yang berhasil dibuka.";
+    archiveSummary.textContent = messages.join(" · ");
+  } catch (error) {
+    if (current === run) notice.textContent = error.message;
+  }
+});
+
+function pathOf(url) {
+  try {
+    const path = new URL(url).pathname;
+    return path === "/" ? url : path;
+  }
+  catch { return String(url || "—"); }
+}
+
+function queryNumber(value, source) {
+  if (!Number.isInteger(value) || Number.isSafeInteger(value)) return value;
+  if (source === undefined) return undefined;
+  return /^-?\d+$/.test(source) ? BigInt(source) : value;
+}
+
+function parseQuery(text) {
+  const conditions = [];
+  const condition = /^([a-z_][\w-]*(?:\.[a-z_][\w-]*|\[(?:\d+|\*)\])*)\s*(>=|<=|!=|=|>|<|contains\b)\s*("(?:[^"\\]|\\.)*"|-?(?:0|[1-9]\d*)(?:\.\d+)?(?:e[+-]?\d+)?|true\b|false\b|null\b)/i;
+  let remaining = text.trim();
+  while (remaining) {
+    const match = condition.exec(remaining);
+    if (!match) throw new Error("Gunakan field, operator, dan nilai. Lihat Cheat Sheet.");
+    const [, path, operator, literal] = match;
+    const parsed = JSON.parse(literal);
+    const value = typeof parsed === "number" ? queryNumber(parsed, literal) : parsed;
+    const op = operator.toLowerCase();
+    if (op === "contains" && typeof value !== "string") throw new Error("contains memerlukan teks dalam tanda kutip.");
+    if ([">", ">=", "<", "<="].includes(op) && !isQueryNumber(value)) throw new Error("Operator urutan memerlukan angka.");
+    conditions.push({path: path.match(/[\w-]+|\*/g), op, value});
+    remaining = remaining.slice(match[0].length).trim();
+    if (!remaining) break;
+    const join = /^and\s+/i.exec(remaining);
+    if (!join) throw new Error("Pisahkan kondisi dengan and.");
+    remaining = remaining.slice(join[0].length).trim();
+    if (!remaining) throw new Error("Tambahkan kondisi setelah and.");
+  }
+  return conditions;
+}
+
+function isQueryNumber(value) {
+  return typeof value === "bigint" || (typeof value === "number" && Number.isFinite(value));
+}
+
+function readQueryJson(text) {
+  return JSON.parse(text, (key, value, context) =>
+    typeof value === "number" ? queryNumber(value, context?.source) : value);
+}
+
+function* queryFields(row, path) {
+  const root = path[0];
+  let value = row.data;
+  if (typeof value[root] === "number" && !Number.isSafeInteger(value[root]) && Number.isInteger(value[root])) {
+    value = readQueryJson(row.raw);
+  }
+  function* walk(current, start) {
+    for (let index = start; index < path.length; index++) {
+      const segment = path[index];
+      if (segment === "*") {
+        if (Array.isArray(current)) {
+          for (const item of current) yield* walk(item, index + 1);
+        }
+        return;
+      }
+      if (current === null || typeof current !== "object" || !Object.hasOwn(current, segment)) return;
+      current = current[segment];
+      if (index === 0 && path.length > 1 && (root === "params" || root === "data") && typeof current === "string") {
+        if (!queryBodies.has(row)) queryBodies.set(row, new Map());
+        const bodies = queryBodies.get(row);
+        if (!bodies.has(root)) {
+          try { bodies.set(root, readQueryJson(current)); }
+          catch { bodies.set(root, undefined); }
+        }
+        current = bodies.get(root);
+      }
+    }
+    yield current;
+  }
+  yield* walk(value, 0);
+}
+
+function matchesQuery(row, {path, op, value}) {
+  for (const actual of queryFields(row, path)) {
+    if (matchesValue(actual, op, value)) return true;
+  }
+  return false;
+}
+
+function matchesValue(actual, op, value) {
+  if (actual === undefined) return false;
+  if (op === "contains") return typeof actual === "string" && actual.includes(value);
+  const numeric = isQueryNumber(actual) && isQueryNumber(value);
+  if (op === "=" || op === "!=") {
+    const equal = numeric ? !(actual < value || actual > value) : actual === value;
+    return op === "=" ? equal : !equal;
+  }
+  if (!numeric) return false;
+  if (op === ">") return actual > value;
+  if (op === ">=") return actual >= value;
+  if (op === "<") return actual < value;
+  return actual <= value;
+}
+
+function clearAdvancedQuery() {
+  activeQuery = [];
+  activeQueryText = "";
+  queryInput.value = "";
+  queryStatus.textContent = "";
+  queryStatus.removeAttribute("data-error");
+}
+
+function filterRows() {
+  const term = search.value.trim().toLowerCase();
+  filtered = rows.filter(row => {
+    const {data, path, raw} = row;
+    return (!endpoint.value || path === endpoint.value) &&
+      (!httpStatus.value || String(data.responseCode ?? "—") === httpStatus.value) &&
+      (!httpMethod.value || data.method === httpMethod.value) &&
+      (!term || raw.toLowerCase().includes(term)) &&
+      activeQuery.every(condition => matchesQuery(row, condition));
+  });
+  page = 0;
+  count.textContent = date.value ? `${filtered.length} log` : "";
+  download.disabled = downloadJsonl.disabled = !filtered.length;
+  renderPage();
+}
+
+function element(tag, value, className) {
+  const node = document.createElement(tag);
+  node.textContent = value;
+  if (className) node.className = className;
+  return node;
+}
+
+function structuredBody(value) {
+  if (typeof value !== "string") return null;
+  const text = value.trim();
+  if (text[0] !== "{" && text[0] !== "[") return null;
+  try {
+    JSON.parse(text);
+    return text;
+  } catch { return null; }
+}
+
+function formatJson(text, indent = 0, expandBodies = false) {
+  // Keep literal tokens intact, including integers JavaScript cannot represent exactly.
+  const tokens = text.match(/"(?:[^"\\]|\\.)*"|[{}\[\],:]|[^\s{}\[\],:"]+/g);
+  const output = [];
+  let depth = 0;
+  const line = () => "\n" + "  ".repeat(indent + depth);
+
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    const previous = tokens[index - 1];
+    if (token === "{" || token === "[") {
+      output.push(token);
+      depth++;
+      if (tokens[index + 1] !== "}" && tokens[index + 1] !== "]") output.push(line());
+    } else if (token === "}" || token === "]") {
+      depth--;
+      if (previous !== "{" && previous !== "[") output.push(line());
+      output.push(token);
+    } else if (token === ",") {
+      output.push(",", line());
+    } else if (token === ":") {
+      output.push(": ");
+    } else {
+      const field = tokens[index - 2];
+      const body = expandBodies && depth === 1 && previous === ":" &&
+        (field === '"params"' || field === '"data"') && token.startsWith('"')
+        ? structuredBody(JSON.parse(token)) : null;
+      output.push(body === null ? token : formatJson(body, indent + depth));
+    }
+  }
+  return output.join("");
+}
+
+function bodyText(value) {
+  if (value == null) return "—";
+  const body = structuredBody(value);
+  if (body !== null) return formatJson(body);
+  return typeof value === "string" ? value : JSON.stringify(value, null, 2);
+}
+
+function copyButton(title, text, label = "Salin") {
+  const button = element("button", label, "copy");
+  button.type = "button";
+  button.setAttribute("aria-label", "Salin " + title);
+  button.setAttribute("aria-live", "polite");
+  let reset;
+  button.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(typeof text === "function" ? text() : text);
+      button.textContent = "Tersalin";
+    } catch {
+      button.textContent = "Gagal menyalin";
+    }
+    clearTimeout(reset);
+    reset = setTimeout(() => { button.textContent = label; }, 1800);
+  });
+  return button;
+}
+
+function card({data, path, raw}) {
+  const detail = document.createElement("details");
+  const summary = document.createElement("summary");
+  const badge = element("span", "", "status-badge");
+  const code = String(data.responseCode ?? "—");
+  const tone = /^2\d\d$/.test(code) ? " ok" : /^(FAILED|[45]\d\d)$/.test(code) ? " error" : "";
+  badge.append(element("span", code, "tag" + tone), element("span", data.method ?? "—", "method"));
+  const label = document.createElement("span");
+  label.append(element("strong", path, "path"),
+    element("span", [data.requestTime, data.uuid].filter(Boolean).join("  ·  "), "meta"));
+  if (data.endpoint && data.endpoint !== path) {
+    label.append(element("span", data.endpoint, "url"));
+  }
+  const duration = typeof data.responseTimeMs === "number" ? `${data.responseTimeMs.toFixed(2)} ms` : "";
+  summary.append(badge, label, element("span", duration, "duration"));
+  detail.append(summary);
+  detail.addEventListener("toggle", () => {
+    if (!detail.open || detail.children.length > 1) return;
+    const fields = element("div", "", "fields");
+    const actions = element("div", "", "entry-actions");
+    actions.append(copyButton("entri JSON", () => formatJson(raw, 0, true), "Salin entri JSON"));
+    fields.append(actions);
+    const headers = Object.entries(data.headers ?? {}).flatMap(([name, values]) =>
+      (Array.isArray(values) ? values : [values]).map(value => `${name}: ${value}`)).join("\n");
+    const sections = [["Full endpoint", data.endpoint ?? "—"], ["Headers", headers || "—"]];
+    if (data.endTimeRequest) sections.push(["Waktu selesai", data.endTimeRequest]);
+    if (data.exception) sections.push(["Exception", data.exception]);
+    for (const [title, value] of [["Params / body", data.params], ["Response data", data.data]]) {
+      if (title === "Response data" && !("data" in data)) continue;
+      sections.push([title, bodyText(value), true]);
+    }
+    for (const [title, text, copyable] of sections) {
+      const heading = element("h2", title);
+      if (copyable) {
+        const bar = element("div", "", "field-heading");
+        bar.append(heading, copyButton(title, text));
+        fields.append(bar);
+      } else {
+        fields.append(heading);
+      }
+      fields.append(element("pre", text));
+    }
+    detail.append(fields);
+  });
+  return detail;
+}
+
+function renderPage() {
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const start = page * pageSize;
+  const end = Math.min(filtered.length, start + pageSize);
+  const fragment = document.createDocumentFragment();
+  for (let index = start; index < end; index++) fragment.append(card(filtered[index]));
+  logs.replaceChildren(fragment);
+  pagination.hidden = totalPages <= 1;
+  previous.disabled = page === 0;
+  next.disabled = page + 1 >= totalPages;
+  pageInfo.textContent = `Halaman ${page + 1} dari ${totalPages} · ${start + 1}–${end}`;
+}
+
+let searchTimer;
+advancedSearch.addEventListener("click", () => {
+  queryForm.hidden = !queryForm.hidden;
+  advancedSearch.setAttribute("aria-expanded", String(!queryForm.hidden));
+  if (!queryForm.hidden) queryInput.focus();
+});
+byId("cheatSheetButton").addEventListener("click", () => cheatSheet.showModal());
+byId("queryExample").addEventListener("click", () => {
+  queryInput.value = queryInput.placeholder;
+  queryInput.focus();
+});
+queryForm.addEventListener("submit", event => {
+  event.preventDefault();
+  if (runQuery.disabled) return;
+  try {
+    activeQuery = parseQuery(queryInput.value);
+    activeQueryText = queryInput.value.trim();
+    queryStatus.removeAttribute("data-error");
+    queryStatus.textContent = activeQueryText ? "Query aktif." : "";
+    filterRows();
+  } catch (error) {
+    queryStatus.setAttribute("data-error", "");
+    queryStatus.textContent = error.message + (activeQueryText ? " Query sebelumnya masih aktif." : "");
+  }
+});
+byId("clearQuery").addEventListener("click", () => {
+  clearAdvancedQuery();
+  filterRows();
+});
+search.addEventListener("input", () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(filterRows, 150);
+});
+endpoint.addEventListener("change", filterRows);
+httpStatus.addEventListener("change", filterRows);
+httpMethod.addEventListener("change", filterRows);
+previous.addEventListener("click", () => {
+  if (previous.disabled) return;
+  page--;
+  renderPage();
+  logs.scrollIntoView({block: "start"});
+});
+next.addEventListener("click", () => {
+  if (next.disabled) return;
+  page++;
+  renderPage();
+  logs.scrollIntoView({block: "start"});
+});
+function downloadFile(parts, extension, type) {
+  const blob = new Blob(parts, {type});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `NetworkLog-${archive.outlet}-${archive.device}-${date.value}.${extension}`;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+download.addEventListener("click", () => {
+  if (!filtered.length) return;
+  const entries = filtered.map(({raw}) => "  " + formatJson(raw, 1, true));
+  downloadFile(["[\n", entries.join(",\n"), "\n]\n"], "json", "application/json");
+});
+
+downloadJsonl.addEventListener("click", () => {
+  if (!filtered.length) return;
+  downloadFile([filtered.map(({raw}) => raw).join("\n"), "\n"], "jsonl", "application/x-ndjson");
+});
+</script>
 </body>
-
 </html>
